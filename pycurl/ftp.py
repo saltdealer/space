@@ -13,6 +13,7 @@ import sys
 import os 
 from ftplib import FTP 
 import socket
+import time
 
 def ftp_upload( file_name ):
     socket.setdefaulttimeout(10)
@@ -21,10 +22,11 @@ def ftp_upload( file_name ):
     ftp.set_debuglevel(2)
     ftp.connect('185.28.20.238','21')
     ftp.login('u737107852','114763xj')
-    ftp.cwd('photo/pp')
+    ftp.cwd('photo')
     file_handler = open(file_name,'rb')
     try:
-        ftp.storbinary('STOR %s' %os.path.basename(i).split('.')[0]+'.jpg',file_handler,bufsize)
+        ftp.storbinary('STOR %s'
+                %os.path.basename(i).split('.')[0].replace('=','')+'.jpg',file_handler,bufsize)
         file_handler.close()
     except Exception ,e:
         print '传输失败'
@@ -33,10 +35,12 @@ def ftp_upload( file_name ):
     os.system('rm '+file_name)
     return True
 def main(arg):
-    for a,b,c in os.walk('./照片'):
-        for i in c:
-            if i is not 'ftp.py' :
-                print i
+    while True:
+        for a,b,c in os.walk('./照片'):
+            for i in c:
+                if i is not 'ftp.py' :
+                    print i
+        time.sleep(600)
             
 if __name__ == '__main__':
     main(sys.argv)
