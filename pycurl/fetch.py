@@ -15,6 +15,9 @@ import random
 import cStringIO
 import pycurl
 import urllib
+import md5
+import sqlite3
+
 class Test:
     def __init__(self):
         self.contents = ''
@@ -29,8 +32,8 @@ def get_img(url,name,path):
     while 1:
         try :
             r = urllib2.urlopen(url)
-            print 'image'+name+'.gif'
-            f = open('./image/'+name+'.gif','ab+')
+            print path+'/'+name+'.gif'
+            f = open(path+'/'+name+'.gif','ab+')
             f.write(r.read())
             r.close()
             f.close()
@@ -126,7 +129,7 @@ def get_dynamic_mm(buf):
                 name = divsub.a.string.strip().replace(" ","")
                 page = divsub.a['href']
         img_url = div.img['src']
-        get_img(img_url,name,name)
+        #get_img(img_url,name,name)
         return page,name
 
 def parse_mm_home(buf,pre_referer,name):
@@ -163,6 +166,8 @@ def parse_mm_home(buf,pre_referer,name):
                 img = parse_node.find('ul',{"id": "photolist"})
                 count_sub = 0
                 link_img = []
+                if img is None:
+                    continue
                 for li1 in img:
                     count_sub +=1
 
@@ -175,12 +180,18 @@ def parse_mm_home(buf,pre_referer,name):
                     parse_re = BeautifulSoup(''.join(  re ),fromEncoding="utf-8")
                     tmp = parse_re.find('img',{"id":"pimg"})
                     link_tmp = tmp['src']
-                    get_img(str(link_tmp), base64.b64encode(link_tmp), name)
+                    get_img(str(link_tmp), name+md5.new(link_tmp).hexdigest() , './image')
 
 
 if __name__ == '__main__':
 
     if len(sys.argv) > 1 or 1:
+        cx = sqlite3.connect('db')
+        cu = cx.cursor()
+        try:
+            cu.execute("""create table content (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT   )""")
+        except Exception,e:
+            pass
         mm_home = None
         url = sys.argv[1]
         url = "http://www.sodao.com/app/showtime/girl?shouye"
@@ -197,9 +208,18 @@ if __name__ == '__main__':
             code =  root.get_code()
             if int(code) == 200 :
                 mm_home,name =get_dynamic_mm(root.get_body())
+                re = cu.execute( " select * from content where url='"+str(mm_home)+"'")
+                flag = re.fetchall()
+                print 'flag is ',flag
+                if flag != []:
+                    time.sleep(40)
+                    continue
+                cu.execute( "insert into content( id, url ) values( ?, ? )", ( None ,str(mm_home) ) )                                            
+                cx.commit()
             if mm_home:
                 home_request = curl_request(str(mm_home))
                 home_request.perform(referer=url)
                 parse_mm_home(home_request.get_body(),mm_home,name)
-            time.sleep(60)
-                
+            
+            time.sleep(40)
+        
