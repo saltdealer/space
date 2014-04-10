@@ -211,6 +211,8 @@ if __name__ == '__main__':
             root = curl_request(url) 
             root.perform()
             code =  root.get_code()
+            if code is None:
+                continue
             if int(code) == 200 :
                 mm_home,name =get_dynamic_mm(root.get_body())
                 re = cu.execute( " select * from content where url='"+str(mm_home)+"'")
