@@ -88,7 +88,8 @@ class curl_request:
         self.c.setopt(pycurl.COOKIE,cookie)
 
     def perform(self,url='',referer=''):
-        if url != '':
+        if url != ''and url != None:
+
             self.c.setopt(pycurl.URL,url)
         if referer != '':
             self.c.setopt(pycurl.REFERER,referer)
