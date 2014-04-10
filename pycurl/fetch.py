@@ -55,6 +55,9 @@ class curl_request:
         self.c.setopt(pycurl.REFERER,'http://www.google.com/search?sourceid=chrome&ie=UTF-8&q='+rand_str())
         self.c.setopt(pycurl.COOKIE,'Hm_lvt_5251b1b3df8c7fd322ea256727293cf0=1393221156,1393223230,1393223252,1393223985;_jzqa=1.46109393469532')
        # self.c.setopt(pycurl.VERBOSE,1)
+    
+        self.c.setopt(pycurl.CONNECTTIMEOUT, 6)
+        self.c.setopt(pycurl.TIMEOUT, 15)
 
         self.c.setopt(pycurl.HEADER,1)
         self.c.setopt(pycurl.FOLLOWLOCATION, 1)
