@@ -29,8 +29,8 @@ def get_img(url,name,path):
     while 1:
         try :
             r = urllib2.urlopen(url)
-            print './照片/'+path+'/'+name+'.gif'
-            f = open('./照片/'+path+'/'+name+'.gif','ab+')
+            print 'image'+name+'.gif'
+            f = open('./image/'+name+'.gif','ab+')
             f.write(r.read())
             r.close()
             f.close()
@@ -51,7 +51,7 @@ class curl_request:
         self.c.setopt(pycurl.USERAGENT,'Miozilla/4.0 (compatible; MSIE 6.0; WindowsNT 5.1');
         self.c.setopt(pycurl.REFERER,'http://www.google.com/search?sourceid=chrome&ie=UTF-8&q='+rand_str())
         self.c.setopt(pycurl.COOKIE,'Hm_lvt_5251b1b3df8c7fd322ea256727293cf0=1393221156,1393223230,1393223252,1393223985;_jzqa=1.46109393469532')
-        self.c.setopt(pycurl.VERBOSE,1)
+       # self.c.setopt(pycurl.VERBOSE,1)
 
         self.c.setopt(pycurl.HEADER,1)
         self.c.setopt(pycurl.FOLLOWLOCATION, 1)
@@ -91,16 +91,15 @@ class curl_request:
         self.c.setopt(pycurl.HEADERFUNCTION, self.head.write)
         try:
             self.c.perform()
+            self.r = self.buf.getvalue()
+            self.h = self.head.getvalue()
+            self.code = self.c.getinfo(pycurl.HTTP_CODE)
+            self.info = self.c.getinfo(pycurl.EFFECTIVE_URL)
+            self.cookie = self.c.getinfo(pycurl.INFO_COOKIELIST)
         except Exception,e:
             self.c.close()
             self.buf.close()
             self.head.close()
-        self.r = self.buf.getvalue()
-        self.h = self.head.getvalue()
-        self.code = self.c.getinfo(pycurl.HTTP_CODE)
-        self.info = self.c.getinfo(pycurl.EFFECTIVE_URL)
-        self.cookie = self.c.getinfo(pycurl.INFO_COOKIELIST)
-
         self.buf.close()
         self.head.close()
     def __del__(self):
@@ -126,12 +125,11 @@ def get_dynamic_mm(buf):
             if str(type(divsub)) ==  "<class 'BeautifulSoup.Tag'>" and divsub['class'] ==    "girl_info" :
                 name = divsub.a.string.strip().replace(" ","")
                 page = divsub.a['href']
-        os.makedirs("./照片/"+name)
         img_url = div.img['src']
         get_img(img_url,name,name)
-        return page
+        return page,name
 
-def parse_mm_home(buf,pre_referer):
+def parse_mm_home(buf,pre_referer,name):
     if not buf:
         return 
     root_soup = BeautifulSoup(''.join( buf ),fromEncoding="utf-8")
@@ -152,7 +150,11 @@ def parse_mm_home(buf,pre_referer):
         buf_photo_list = photo_list.get_body()
         root =  BeautifulSoup(''.join(buf_photo_list),fromEncoding="utf-8")
         photo = root.find('ul',{"class":"albumlist"})
-        for li in photo.li:
+
+        for li in photo:
+            if not str(type(li)) ==  "<class 'BeautifulSoup.Tag'>" :
+                continue
+            li = li.div
             if str(type(li)) ==  "<class 'BeautifulSoup.Tag'>" and li['class'] == "left-pic-box":
                 link = li.dl.dt.a['href']
                 photo = photo_list.perform(url= str(link),referer=str(photo_list_link) )
@@ -160,50 +162,24 @@ def parse_mm_home(buf,pre_referer):
                 parse_node = BeautifulSoup(''.join(  photo_album_buf ),fromEncoding="utf-8")
                 img = parse_node.find('ul',{"id": "photolist"})
                 count_sub = 0
+                link_img = []
                 for li1 in img:
                     count_sub +=1
 
                     if str(type(li1)) == "<class 'BeautifulSoup.Tag'>" and      li1.dt and not li1.dt.a.has_key('onclick'):
                         link = li1.dt.a['href']
-                print 'count is ',count_sub
-                for i in range(1,count_sub):
-                    tmp = link+'#p'+str(i)
-                    print tmp
-                    request =  photo_list.perform(url=str(tmp),referer=str(photo_list_link) )
+                        link_img.append(str(link))        
+                for i in link_img:
+                    request =  photo_list.perform(url=str(i),referer=str(photo_list_link) )
                     re = photo_list.get_body()
                     parse_re = BeautifulSoup(''.join(  re ),fromEncoding="utf-8")
                     tmp = parse_re.find('img',{"id":"pimg"})
-                    print tmp
-
-
-
-"""
-        for li in div.ul:
-            if str(type(li)) ==  "<class 'BeautifulSoup.Tag'>" :
-                img_href = li.a['href']
-                print img_href
-                if img_href not in photo_link:
-                    photo_link.append(img_href)
-                else:
-                    continue 
-                target_img = curl_request(str(img_href))
-                target_img.perform(referer=str(pre_referer))
-                buf_img = target_img.get_body()
-                root_target_img = BeautifulSoup(''.join( buf_img ),fromEncoding="utf-8")
-                amount = root_target_img.find('span',{"id":"ptotal"})
-                print amount
-                #int_amount = int (amount.string)
-                #print int_amount
-                count += 1
-                print "big img",img['src']
-
-                get_img(img['src'],user_name+str(count),user_name)
-                
-
-"""
+                    link_tmp = tmp['src']
+                    get_img(str(link_tmp), base64.b64encode(link_tmp), name)
 
 
 if __name__ == '__main__':
+
     if len(sys.argv) > 1:
         mm_home = None
         url = sys.argv[1]
@@ -213,22 +189,17 @@ if __name__ == '__main__':
         login.set_post_para({"account":"jjxx2004@gmail.com","password":"12344321","rememberMe":"on","btnSubmit":"%E7%99%BB++++++%E5%BD%95"})
         login.set_cookie("referUrl_reg=http://www.sodao.com/app/showtime/girl;sodao_uba_id=1005333;CNZZDATA30034403=cnzz_eid%3D1289256132-1395642447-http%253A%252F%252Freg.sodao.com%252F%26ntime%3D1395968329%26cnzz_a%3D0%26sin%3Dhttp%253A%252F%252Fwww.sodao.com%252Fapp%252Fshowtime%252Fgirl%26ltime%3D1395970831824%26rtime%3D2;sd_uid=m2gatwwokzb4dwhz4n3itn5n;username=;ASP.NET_SessionId=sqibckyusqeeflqumrozr2af;flashnotice=2619efafdd354c0885463cfd9b15bd70")
         login.perform()
-        print login.get_body()
 
-        root = curl_request(url) 
-        root.perform()
-        code =  root.get_code()
-        print code 
-        if int(code) == 200 :
-            mm_home =get_dynamic_mm(root.get_body())
-        if mm_home:
-            print mm_home
-            home_request = curl_request(str(mm_home))
-            home_request.perform(referer=url)
-            parse_mm_home(home_request.get_body(),mm_home)
+        while 1:
+
+            root = curl_request(url) 
+            root.perform()
+            code =  root.get_code()
+            if int(code) == 200 :
+                mm_home,name =get_dynamic_mm(root.get_body())
+            if mm_home:
+                home_request = curl_request(str(mm_home))
+                home_request.perform(referer=url)
+                parse_mm_home(home_request.get_body(),mm_home,name)
+            time.sleep(60)
                 
-
-
-"""        print root.get_body()
-        print root.get_cookie()
-        print root.get_code()"""
