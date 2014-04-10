@@ -48,6 +48,7 @@ class curl_request:
     def __init__(self,url,action='get'):
         self.url = url
         self.url_para =None
+        self.code=None
         self.c = pycurl.Curl()
         print self.url,"     d"
         self.c.setopt(pycurl.URL,self.url)
