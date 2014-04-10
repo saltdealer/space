@@ -180,10 +180,10 @@ def parse_mm_home(buf,pre_referer,name):
 
 if __name__ == '__main__':
 
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 1 or 1:
         mm_home = None
         url = sys.argv[1]
-        print url
+        url = "http://www.sodao.com/app/showtime/girl?shouye"
         login = curl_request("http://reg.sodao.com/account/logon")
         login.set_url_para("?siteid=2&loginid=8aa8b46f-2e16-43c0-890a-89342d941d3b&signtext=fXayVh0a7GzH1NxSFUfBbLvoP%2fqoH%2fuHT55%2fR49GzVz64jTbJ%2bZ9XK54vRkxJ%2fKaAhyO48Lg0jMECHPH8xP5KL7FR1T27h5jP%2bcQHZDtrxhnPwLmn%2b8S4YcOFtfwShtSfy3IQtZNL6O6WrqO%2fepmR3RE9Uf%2bKXhOrkIGau0T5Xc%3d&uid=&fromurl=http%3a%2f%2fwww.sodao.com")
         login.set_post_para({"account":"jjxx2004@gmail.com","password":"12344321","rememberMe":"on","btnSubmit":"%E7%99%BB++++++%E5%BD%95"})
