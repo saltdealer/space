@@ -188,8 +188,12 @@ def parse_mm_home(buf,pre_referer,name):
                 for i in link_img:
                     request =  photo_list.perform(url=str(i),referer=str(photo_list_link) )
                     re = photo_list.get_body()
+                    if re is None :
+                        continue
                     parse_re = BeautifulSoup(''.join(  re ),fromEncoding="utf-8")
                     tmp = parse_re.find('img',{"id":"pimg"})
+                    if tmp is None:
+                        continue
                     link_tmp = tmp['src']
                     get_img(str(link_tmp), name+md5.new(link_tmp).hexdigest() , './image')
 
