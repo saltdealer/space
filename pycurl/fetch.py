@@ -17,7 +17,7 @@ import pycurl
 import urllib
 import md5
 import sqlite3
-
+import socket
 class Test:
     def __init__(self):
         self.contents = ''
@@ -46,6 +46,7 @@ def get_img(url,name,path):
 class curl_request:
     c=None
     def __init__(self,url,action='get'):
+        socket.setdefaulttimeout(10)
         self.url = url
         self.url_para =None
         self.code=None
@@ -109,7 +110,6 @@ class curl_request:
             self.info = self.c.getinfo(pycurl.EFFECTIVE_URL)
             self.cookie = self.c.getinfo(pycurl.INFO_COOKIELIST)
         except Exception,e:
-            self.c.close()
             self.buf.close()
             self.head.close()
         self.buf.close()
