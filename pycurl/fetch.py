@@ -160,6 +160,8 @@ def parse_mm_home(buf,pre_referer,name):
         photo_list = curl_request(str( photo_list_link  ))
         photo_list.perform(referer=str(pre_referer))
         buf_photo_list = photo_list.get_body()
+        if buf_photo_list == None:
+            return None
         root =  BeautifulSoup(''.join(buf_photo_list),fromEncoding="utf-8")
         photo = root.find('ul',{"class":"albumlist"})
 
