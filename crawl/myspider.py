@@ -217,7 +217,7 @@ def main(argv):
             os.remove(dbfile)
         cx = sqlite3.connect(dbfile)
         cu=cx.cursor()
-        cu.execute("""create table content (id INTEGER PRIMARY KEY AUTOINCREMENT,url varchar(100), content varchar(50000)  )""")
+        cu.execute("""create table content (id INTEGER PRIMARY KEY AUTOINCREMENT,url varchar(100), content text  )""")
           
     logger.debug('thread num is '+str(thread_num))
     logger.debug('scrawl_level is ' + str(scrawl_level))
