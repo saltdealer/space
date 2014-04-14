@@ -33,7 +33,7 @@ class curl_request:
         
         self.c.setopt(pycurl.CONNECTTIMEOUT, 6)
         self.c.setopt(pycurl.TIMEOUT, 15)
-
+        self.c.setopt(pycurl.NOSIGNAL, 1)
         self.c.setopt(pycurl.HEADER,1)
         self.c.setopt(pycurl.FOLLOWLOCATION, 1)
         self.c.setopt(pycurl.MAXREDIRS, 5)

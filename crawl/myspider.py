@@ -28,9 +28,8 @@ from Request import curl_request
 
 global logger
 class MyThread(threading.Thread):
-    def __init__(self, workQueue, resultQueue, contentQueue, key, timeout=15):
+    def __init__(self, workQueue, resultQueue, contentQueue, key, timeout=7):
         threading.Thread.__init__(self)
-        self.mutex = threading.Lock()
         self.timeout = timeout
         self.setDaemon(True)
         self.workQueue = workQueue
@@ -44,9 +43,7 @@ class MyThread(threading.Thread):
     def run(self):
         while True:
             try:
-               # if self.mutex.acquire(1): 
                 callable, args, kwargs, deep = self.workQueue.get(timeout=self.timeout)
-                #self.mutex.release()
                 self.flag = True
                 res = callable(args,self.resultQueue,self.contentQueue,kwargs,deep,self.key)
                 self.flag = False
@@ -58,7 +55,7 @@ class MyThread(threading.Thread):
                     break
                 continue
             except :
-                print sys.exc_info()
+                logger.exception()
                 raise
             
 class ThreadPool:
@@ -155,17 +152,28 @@ def crawl_url( url, resultQueue, contentQueue, sleep, deep, key):
         return
     for k in u:
         if re.search(key,str(k)) is not None:
-          #  print str(k)
+          #  print str(kdd)
             contentQueue.put( (str(url), str(k) ))
 
 def Usage():
     print 'myspider.py usage:'
+    print 'python myspider -u url -d deep -f logfile -l log_level --key  --thread thread_num --dbfile db'
+    print 'log_level range in 1-5'
+    print '--key used to search '
+    print '--dbfile is the path to store matched text(default is db)'
 
 def get_rand():
     return random.sample([0.1,0.2,0.3,0.4,0.5],1)
 def main(argv):
     global logger
+    global lock, result_lock
+    lock = threading.Lock()
+    result_lock = threading.Lock()
+    url = None
     thread_num=10
+    log_file = 'log'
+    dbfile = 'db'
+    scrawl_level = 1
     try:
         opts, args = getopt.getopt(argv[1:],'hu:d:t:l:f:i:',['key=','thread=','dbfile='])
     except getopt.GetoptError, err:
@@ -194,6 +202,9 @@ def main(argv):
             print 'unhandled option'
             sys.exit(3)
 
+    if url is None :
+        Usage()
+        sys.exit(2)
     cu = None
     cx = None
     logger = logging.getLogger()
@@ -201,12 +212,12 @@ def main(argv):
     logger.addHandler(hdlr)
     level = (6-log_level)*10
     logger.setLevel(level)
-  #  logger.info("hi")
     if dbfile is not None:
-        os.remove(dbfile)
+        if os.path.exists(dbfile):
+            os.remove(dbfile)
         cx = sqlite3.connect(dbfile)
         cu=cx.cursor()
-        cu.execute("""create table content (id INTEGER PRIMARY KEY AUTOINCREMENT,url varchar(100), content varchar(4000)  )""")
+        cu.execute("""create table content (id INTEGER PRIMARY KEY AUTOINCREMENT,url varchar(100), content varchar(50000)  )""")
           
     logger.debug('thread num is '+str(thread_num))
     logger.debug('scrawl_level is ' + str(scrawl_level))
@@ -223,9 +234,8 @@ def main(argv):
             print '已经处理链接数：',count,'正在处理链接数',tp.get_num(),'剩余未处理的链接数：',tp.resultQueue.qsize(),'未插入数据：',tp.contentQueue.qsize()
             time_old = time.time()
         try:
-            url,deep= tp.resultQueue.get(timeout=0.5)
+            url,deep= tp.resultQueue.get(timeout=1)
             if url is not None and int(deep) <= scrawl_level:
-               # print "adding  deep",deep
                 logger.info('adding url: '+url.encode()+'and deep is: '+str(deep))
                 count += 1
                 tp.add_job(crawl_url, url, get_rand(), deep)
@@ -237,7 +247,7 @@ def main(argv):
         try:
             url,content= tp.contentQueue.get(timeout=0)
             if url is not None:
-              #  print 'gettingiiiiiiiiii ',content,url
+               # print 'gettingiiiiiiiiii ',content,url
                 cu.execute( "insert into content(id , url,content) values(?,?,?)", (None ,str(url), content.decode('utf-8')))
         except Queue.Empty:
             continue
