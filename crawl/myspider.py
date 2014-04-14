@@ -238,7 +238,7 @@ def main(argv):
             url,content= tp.contentQueue.get(timeout=0)
             if url is not None:
               #  print 'gettingiiiiiiiiii ',content,url
-                cu.execute( "insert into content(url,content) values(?,?)", (str(url), content.decode('utf-8')))
+                cu.execute( "insert into content(id , url,content) values(?,?,?)", (None ,str(url), content.decode('utf-8')))
         except Queue.Empty:
             continue
             
