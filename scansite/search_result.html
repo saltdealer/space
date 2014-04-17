@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}
+example time
+{% endblock %}
+
+{% block content %}
+        {% if tag %}
+            {% for item in paras %}
+                <li> {{ item | upper }} </li>
+            {% endfor %}
+        {% else %}
+            <li> no paras </li>
+        {% endif %}
+        <form action="/search/" method="get">
+            <input type="text" name="q">
+            <input type="submit" value="Search">
+        </form>
+
+{% endblock %}
+
+
