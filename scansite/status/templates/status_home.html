@@ -1,0 +1,18 @@
+{% extends "status_base.html" %}
+{% block title %}
+task status
+{% endblock %}
+{% load staticfiles %}   
+{% block style %}
+<script src="{% static "js/status.js" %}"> </script>
+{% endblock %}
+
+{% block content %}
+{% load staticfiles %} 
+<div class="status">
+    <p class='task_id' id='id'> {{ task_id }} </p>
+    <progress id="prog" value="0" max="100"></progress>
+</div>
+{% endblock %}
+
+

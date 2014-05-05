@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+LOGIN_URL = '/login'
+
 TEMPLATE_DIRS = (
     os.path.join(os.path.dirname(__file__),'templates'),
 )
@@ -41,6 +43,9 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'books',
+    'login',
+    'task',
+    'status',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -63,7 +68,7 @@ WSGI_APPLICATION = 'scansite.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE':'django.db.backends.sqlite3',
-        'NAME' : 'db.db',
+        'NAME' : '/home/blacktea/space/space/scansite/db.db',
 #        'ENGINE': 'django.db.backends.mysql',
 #       'NAME': 'test',
 #        'USER': 'root',
@@ -87,7 +92,12 @@ USE_L10N = True
 USE_TZ = True
 
 
+STATICFILES_DIRS = ( os.path.join(BASE_DIR, "static"), 
+		'/var/www/static/',
+)
+STATIC_ROOT ='/static/'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
+STATIC_ROOT ='/home/blacktea/space/space/scansite/static'
 STATIC_URL = '/static/'

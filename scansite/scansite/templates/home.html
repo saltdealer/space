@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}
+create task
+{% endblock %}
+{% load staticfiles %}   
+{% block style %}
+<script src="{% static "js/app.js" %}"> </script>
+{% endblock %}
+
+{% block content %}
+{% load staticfiles %} 
+<div class="task">
+    <form id="task_form" action="" method="post">
+        <div class="task_T" id="task_T">
+            {{ form.target.errors }}
+            {{ form.target }}
+        </div>
+        <div class="task_type" id="task_type">
+            {{ form.choice.errors }}
+            {{ form.choice }}
+        </div>
+        <input id="submit" type="submit" value="start">
+        {% csrf_token %}
+    </form>
+
+</div>
+{% endblock %}
+
+

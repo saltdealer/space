@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}
+
+please login 
+{% endblock %}
+
+{% block content %}
+        {% if tag %}
+            {% for item in paras %}
+                <li> {{ item | upper }} </li>
+            {% endfor %}
+        {% else %}
+            <li>   </li>
+        {% endif %}
+        
+        {% if errors %}
+            <ul>
+                {% for error in errors %}
+                <li> {{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if form.errors %}
+            <p style="color: red;">
+                please correct the error{{ form.errors|pluralize }} below.
+            </p>
+        {% endif %}
+        
+        <form action="" method="post">
+            <table>
+                {{ form.as_table }}
+            </table>
+            {% csrf_token %}
+            <input type="submit" value="Submit">
+        </form>
+
+{% endblock %}
+
+
