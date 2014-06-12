@@ -1,0 +1,27 @@
+#/bin/sh -e 
+
+case "$1" in
+  start)
+        echo -n "Starting $DESC: "
+        haproxy -f haproxy.conf
+        echo ""
+        ;;
+  stop)
+        echo -n "Stopping $DESC: "
+        killall -9 haproxy
+        echo ""
+        ;;
+  restart)
+        echo -n "restarting $DESC: "
+        killall -9 haproxy
+        haproxy -f haproxy.conf
+        echo ""
+        ;;
+    *)
+    echo -n "haproxy"
+    killall -9 haproxy
+    haproxy -f haproxy.conf
+    echo ""
+    ;;
+
+esac

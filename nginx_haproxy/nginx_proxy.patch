@@ -1,0 +1,765 @@
+diff -urN nginx-1.7.1_old/src/core/ngx_connection.h nginx-1.7.1/src/core/ngx_connection.h
+--- nginx-1.7.1_old/src/core/ngx_connection.h	2014-06-11 10:01:19.447020559 +0800
++++ nginx-1.7.1/src/core/ngx_connection.h	2014-06-11 09:14:45.674874005 +0800
+@@ -11,6 +11,7 @@
+ 
+ #include <ngx_config.h>
+ #include <ngx_core.h>
++#include <ngx_proxy_protocol.h>
+ 
+ 
+ typedef struct ngx_listening_s  ngx_listening_t;
+@@ -140,6 +141,12 @@
+     ngx_str_t           addr_text;
+ 
+     ngx_str_t           proxy_protocol_addr;
++    ngx_str_t           proxy_protocol_addr_port;
++    ngx_str_t           proxy_protocol_dst;
++    ngx_str_t           proxy_protocol_dst_port;
++    ngx_uint_t          proxy_protocol_flag;
++    ngx_uint_t          proxy_protocol_version;
++    struct proxy_addr_v2 proxy_v2_addr;
+ 
+ #if (NGX_SSL)
+     ngx_ssl_connection_t  *ssl;
+diff -urN nginx-1.7.1_old/src/core/ngx_proxy_protocol.c nginx-1.7.1/src/core/ngx_proxy_protocol.c
+--- nginx-1.7.1_old/src/core/ngx_proxy_protocol.c	2014-06-11 10:01:19.447020559 +0800
++++ nginx-1.7.1/src/core/ngx_proxy_protocol.c	2014-06-11 10:07:50.782624299 +0800
+@@ -8,15 +8,20 @@
+ #include <ngx_config.h>
+ #include <ngx_core.h>
+ 
++#define PROXY_VERSION1 1
++#define PROXY_VERSION2 2
++
+ 
+ u_char *
+-ngx_proxy_protocol_parse(ngx_connection_t *c, u_char *buf, u_char *last)
++ngx_proxy_protocol_parse_v1(ngx_connection_t *c, u_char *buf, u_char *last)
+ {
+     size_t  len;
+-    u_char  ch, *p, *addr;
+-
++    u_char  ch, *p, *addr,*t;
++    size_t s;
+     p = buf;
+     len = last - buf;
++    s = len;
++
+ 
+     if (len < 8 || ngx_strncmp(p, "PROXY ", 6) != 0) {
+         goto invalid;
+@@ -24,6 +29,7 @@
+ 
+     p += 6;
+     len -= 6;
++    s -= 6;
+ 
+     if (len >= 7 && ngx_strncmp(p, "UNKNOWN", 7) == 0) {
+         ngx_log_debug0(NGX_LOG_DEBUG_CORE, c->log, 0,
+@@ -37,8 +43,15 @@
+     {
+         goto invalid;
+     }
++    if(p[3] == '4')
++    {
++        c->proxy_protocol_version = AF_INET;
++    }else if (p[3] == '6'){
++        c->proxy_protocol_version = AF_INET6;
++    }
+ 
+     p += 5;
++    s -= 5;
+     addr = p;
+ 
+     for ( ;; ) {
+@@ -62,6 +75,8 @@
+     }
+ 
+     len = p - addr - 1;
++    s -= len;
++
+     c->proxy_protocol_addr.data = ngx_pnalloc(c->pool, len);
+ 
+     if (c->proxy_protocol_addr.data == NULL) {
+@@ -74,8 +89,53 @@
+     ngx_log_debug1(NGX_LOG_DEBUG_CORE, c->log, 0,
+                    "PROXY protocol address: \"%V\"", &c->proxy_protocol_addr);
+ 
+-skip:
++    if ( (t = (u_char *)memchr(p, ' ', s)) == NULL ) {
++        goto invalid;
++    }
++    len = t-p;
++    c->proxy_protocol_dst.data = ngx_pnalloc(c->pool, len);
++
++    if (c->proxy_protocol_dst.data == NULL) {
++        return NULL;
++    }
++    ngx_memcpy(c->proxy_protocol_dst.data,p,len);
++    c->proxy_protocol_dst.len = len;
++    p += (len+1);
++    s -= (len+1);
++
++    if ( (t = (u_char *)memchr(p, ' ', s)) == NULL ) {
++        goto invalid;
++    }
++    len = t-p;
++    c->proxy_protocol_addr_port.data = ngx_pnalloc(c->pool, len);
+ 
++    if (c->proxy_protocol_addr_port.data == NULL) {
++        return NULL;
++    }
++    ngx_memcpy(c->proxy_protocol_addr_port.data,p,len);
++    c->proxy_protocol_addr_port.len = len;
++    p += (len+1);
++    s -= (len+1);
++
++    if ( (t = (u_char *)memchr(p, CR, s)) == NULL ) {
++    s = len;
++        goto invalid;
++    }
++    len = t-p;
++    c->proxy_protocol_dst_port.data = ngx_pnalloc(c->pool, len);   
++    if (c->proxy_protocol_dst_port.data == NULL) {
++        return NULL;
++    }
++    ngx_memcpy(c->proxy_protocol_dst_port.data,p,len);
++    c->proxy_protocol_dst_port.len = len;
++    p += len;
++    c->proxy_protocol_flag = 1;
++
++//ngx_log_error(NGX_LOG_NOTICE, ngx_cycle->log, 0, "p result %s  %s     %s  %s %d ",c->proxy_protocol_dst_port.data, c->proxy_protocol_addr_port.data, c->proxy_protocol_dst.data, c->proxy_protocol_addr.data ,  c->proxy_protocol_addr.len );
++    
++
++
++skip:
+     for ( /* void */ ; p < last - 1; p++) {
+         if (p[0] == CR && p[1] == LF) {
+             return p + 2;
+@@ -89,3 +149,145 @@
+ 
+     return NULL;
+ }
++
++
++u_char *
++ngx_proxy_protocol_parse_v2(ngx_connection_t *c, u_char *buf, u_char *last)
++{
++    u_char sig[12] = { 0x0D, 0x0A, 0x0D, 0x0A, 0x00, 0x0D, 0x0A, 0x51, 0x55, 0x49, 0x54, 0x0A};
++    int flag = memcmp(buf,sig,12);
++    unsigned int len;
++    struct proxy_hdr_v2 header;
++    char ip[40];
++    char port[7];
++
++    u_char *p = buf;
++    if (flag == 0)
++    {
++        memcpy(&header,buf,sizeof( header ));
++
++        header.len = sw16(header.len);//big-endian 
++
++        len = sizeof(header) + header.len;
++        
++        memcpy(&c->proxy_v2_addr.addr,buf+sizeof(header),header.len);
++        c->proxy_v2_addr.fam = header.fam;
++        c->proxy_v2_addr.ver = header.ver;
++        c->proxy_v2_addr.addr_len = header.len;
++
++
++        if( (header.fam & 0xf0) == PROXY_IPV4)
++        {
++            struct in_addr sin_addr;
++            memcpy(&sin_addr, &c->proxy_v2_addr.addr.ipv4_addr.src_addr,sizeof(struct in_addr));
++            inet_ntop(AF_INET, &sin_addr,  ip, sizeof( ip));
++            c->proxy_protocol_addr.data = ngx_pnalloc(c->pool, strlen(ip) );
++            if (c->proxy_protocol_addr.data == NULL) {
++                return NULL;
++            }   
++            ngx_memcpy(c->proxy_protocol_addr.data, ip , strlen(ip) );
++            c->proxy_protocol_addr.len = strlen(ip);
++
++            memcpy(&sin_addr, &c->proxy_v2_addr.addr.ipv4_addr.dst_addr,sizeof(struct in_addr));
++            inet_ntop(AF_INET, &sin_addr,  ip, sizeof( ip));
++            c->proxy_protocol_dst.data = ngx_pnalloc(c->pool, strlen(ip) );
++            if (c->proxy_protocol_dst.data == NULL) {
++                return NULL;
++            }           
++            ngx_memcpy(c->proxy_protocol_dst.data, ip , strlen(ip) );
++            c->proxy_protocol_dst.len = strlen(ip);
++
++            snprintf(port,7,"%u",ntohs( c->proxy_v2_addr.addr.ipv4_addr.src_port));
++            c->proxy_protocol_addr_port.data = ngx_pnalloc(c->pool, strlen(port) );
++
++            if (c->proxy_protocol_addr_port.data == NULL) {
++                return NULL;
++            }
++            ngx_memcpy(c->proxy_protocol_addr_port.data, port, strlen(port));
++            c->proxy_protocol_addr_port.len = strlen(port);
++
++            snprintf(port,7,"%u",ntohs( c->proxy_v2_addr.addr.ipv4_addr.dst_port));
++            c->proxy_protocol_dst_port.data = ngx_pnalloc(c->pool, strlen(port) );
++
++            if (c->proxy_protocol_dst_port.data == NULL) {
++                return NULL;
++            }
++            ngx_memcpy(c->proxy_protocol_dst_port.data, port, strlen(port));
++            c->proxy_protocol_dst_port.len = strlen(port);
++
++            c->proxy_protocol_version = AF_INET;
++            c->proxy_protocol_flag = 1;
++
++        }else if ( (header.fam & 0xf0) == PROXY_IPV6) 
++        {
++            struct in6_addr sin6_addr;
++            memcpy(&sin6_addr, &c->proxy_v2_addr.addr.ipv6_addr.src_addr,sizeof(struct in6_addr));
++            inet_ntop(AF_INET6, &sin6_addr,  ip, sizeof( ip));
++
++            c->proxy_protocol_addr.data = ngx_pnalloc(c->pool, strlen(ip) );
++            if (c->proxy_protocol_addr.data == NULL) {
++                return NULL;
++            }
++            ngx_memcpy(c->proxy_protocol_addr.data, ip , strlen(ip) );
++            c->proxy_protocol_addr.len = strlen(ip);
++
++            memcpy(&sin6_addr, &c->proxy_v2_addr.addr.ipv6_addr.dst_addr,sizeof(struct in6_addr));
++            inet_ntop(AF_INET6, &sin6_addr,  ip, sizeof( ip));
++            c->proxy_protocol_dst.data = ngx_pnalloc(c->pool, strlen(ip) );
++            if (c->proxy_protocol_dst.data == NULL) {
++                return NULL;
++            }    
++            ngx_memcpy(c->proxy_protocol_dst.data, ip , strlen(ip) );
++            c->proxy_protocol_dst.len = strlen(ip);
++
++            snprintf(port,7,"%u",ntohs( c->proxy_v2_addr.addr.ipv6_addr.src_port));
++            c->proxy_protocol_addr_port.data = ngx_pnalloc(c->pool, strlen(port) );
++
++            if (c->proxy_protocol_addr_port.data == NULL) {
++                return NULL;
++            }
++            ngx_memcpy(c->proxy_protocol_addr_port.data, port, strlen(port));
++            c->proxy_protocol_addr_port.len = strlen(port);
++
++            snprintf(port,7,"%u",ntohs( c->proxy_v2_addr.addr.ipv6_addr.dst_port));
++            c->proxy_protocol_dst_port.data = ngx_pnalloc(c->pool, strlen(port) );
++
++            if (c->proxy_protocol_dst_port.data == NULL) {
++                return NULL;
++            }
++            ngx_memcpy(c->proxy_protocol_dst_port.data, port, strlen(port));
++            c->proxy_protocol_dst_port.len = strlen(port);
++
++            c->proxy_protocol_flag = 1;
++            c->proxy_protocol_version = AF_INET6;
++
++        }else if ( (header.fam & 0xf0) == PROXY_UNIX||(header.fam & 0xf0) == UNSPEC ){
++            ngx_log_error(NGX_LOG_NOTICE, ngx_cycle->log, 0, " unspecified type and address len is %d", header.len); 
++            c->proxy_protocol_flag = 0;
++
++        }
++        p = buf + len;
++        return p;
++    }
++    ngx_log_error(NGX_LOG_ERR, c->log, 0,
++                  "broken header: \"%*s\"", (size_t) (last - buf), buf);
++
++    return NULL;
++
++}
++
++u_char *
++ngx_proxy_protocol_parse(ngx_connection_t *c, u_char *buf, u_char *last, unsigned version )
++{
++
++    if (version == PROXY_VERSION1)
++    {
++        return ngx_proxy_protocol_parse_v1(c,buf,last);
++    }else if (version == PROXY_VERSION2)
++    {
++        return ngx_proxy_protocol_parse_v2(c,buf,last);
++    }
++    return NULL;
++}
++
++ 
+diff -urN nginx-1.7.1_old/src/core/ngx_proxy_protocol.h nginx-1.7.1/src/core/ngx_proxy_protocol.h
+--- nginx-1.7.1_old/src/core/ngx_proxy_protocol.h	2014-06-11 10:01:19.447020559 +0800
++++ nginx-1.7.1/src/core/ngx_proxy_protocol.h	2014-06-11 09:14:45.682869854 +0800
+@@ -14,10 +14,59 @@
+ 
+ 
+ #define NGX_PROXY_PROTOCOL_MAX_HEADER  107
++#define PROXY_IPV4 0x10
++#define PROXY_IPV6 0x20
++#define PROXY_UNIX 0x30
++#define UNSPEC  0x00
++
++#define PROXY_TCP  0x1
++#define PROXY_UDP  0x2
+ 
+ 
++#define sw16(x) \
++    ((uint16_t)( \
++        (((uint16_t)(x) & (uint16_t)0x00ffU) << 8 ) | \
++        (((uint16_t)(x) & (uint16_t)0xff00U) >> 8 ) ))
++
+ u_char *ngx_proxy_protocol_parse(ngx_connection_t *c, u_char *buf,
+-    u_char *last);
++    u_char *last,unsigned flag);
++
++
++
++struct proxy_hdr_v2 {
++    uint8_t sig[12];  /* hex 0D 0A 0D 0A 00 0D 0A 51 55 49 54 0A */
++    uint8_t ver;      /* protocol version and command */
++    uint8_t fam;      /* protocol family and address */
++    uint16_t len;     /* number of following bytes part of the header */
++};
++
++
++union proxy_addr {
++    struct {        /* for TCP/UDP over IPv4, len = 12 */
++        uint32_t src_addr;
++        uint32_t dst_addr;
++        uint16_t src_port;
++        uint16_t dst_port;
++    } ipv4_addr;
++    struct {        /* for TCP/UDP over IPv6, len = 36 */
++        uint8_t  src_addr[16];
++        uint8_t  dst_addr[16];
++        uint16_t src_port;
++        uint16_t dst_port;
++    } ipv6_addr;
++    struct {        /* for AF_UNIX sockets, len = 216 */
++        uint8_t src_addr[108];
++        uint8_t dst_addr[108];
++    } unix_addr;
++};
++
++
++struct proxy_addr_v2{
++    union proxy_addr addr;
++    uint8_t ver;
++    uint8_t fam;
++    uint16_t addr_len;
++};
+ 
+ 
+ #endif /* _NGX_PROXY_PROTOCOL_H_INCLUDED_ */
+diff -urN nginx-1.7.1_old/src/http/modules/ngx_http_proxy_module.c nginx-1.7.1/src/http/modules/ngx_http_proxy_module.c
+--- nginx-1.7.1_old/src/http/modules/ngx_http_proxy_module.c	2014-06-11 10:01:19.451020278 +0800
++++ nginx-1.7.1/src/http/modules/ngx_http_proxy_module.c	2014-06-11 09:14:45.526950790 +0800
+@@ -389,6 +389,13 @@
+       offsetof(ngx_http_proxy_loc_conf_t, upstream.busy_buffers_size_conf),
+       NULL },
+ 
++     { ngx_string("send_proxy_protocol"),
++       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_FLAG,
++       ngx_conf_set_flag_slot,
++       NGX_HTTP_LOC_CONF_OFFSET,
++       offsetof(ngx_http_proxy_loc_conf_t, upstream.send_proxy_protocol),
++       NULL },              
++
+ #if (NGX_HTTP_CACHE)
+ 
+     { ngx_string("proxy_cache"),
+@@ -2489,6 +2496,8 @@
+     conf->upstream.pass_headers = NGX_CONF_UNSET_PTR;
+ 
+     conf->upstream.intercept_errors = NGX_CONF_UNSET;
++    conf->upstream.send_proxy_protocol = NGX_CONF_UNSET;
++
+ 
+ #if (NGX_HTTP_SSL)
+     conf->upstream.ssl_session_reuse = NGX_CONF_UNSET;
+@@ -2765,6 +2774,10 @@
+     ngx_conf_merge_value(conf->upstream.intercept_errors,
+                               prev->upstream.intercept_errors, 0);
+ 
++    ngx_conf_merge_value(conf->upstream.send_proxy_protocol,
++                            prev->upstream.send_proxy_protocol, 0);
++
++
+ #if (NGX_HTTP_SSL)
+ 
+     ngx_conf_merge_value(conf->upstream.ssl_session_reuse,
+diff -urN nginx-1.7.1_old/src/http/modules/ngx_http_realip_module.c nginx-1.7.1/src/http/modules/ngx_http_realip_module.c
+--- nginx-1.7.1_old/src/http/modules/ngx_http_realip_module.c	2014-06-11 10:01:19.451020278 +0800
++++ nginx-1.7.1/src/http/modules/ngx_http_realip_module.c	2014-06-11 09:14:45.550938338 +0800
+@@ -356,7 +356,7 @@
+         return NGX_CONF_OK;
+     }
+ 
+-    if (ngx_strcmp(value[1].data, "proxy_protocol") == 0) {
++    if (ngx_strcmp(value[1].data, "proxy_protocol") == 0 ||  ngx_strcmp(value[1].data, "proxy_protocol_v2") == 0 ) {
+         rlcf->type = NGX_HTTP_REALIP_PROXY;
+         return NGX_CONF_OK;
+     }
+diff -urN nginx-1.7.1_old/src/http/ngx_http.c nginx-1.7.1/src/http/ngx_http.c
+--- nginx-1.7.1_old/src/http/ngx_http.c	2014-06-11 10:01:19.451020278 +0800
++++ nginx-1.7.1/src/http/ngx_http.c	2014-06-11 09:14:45.550938338 +0800
+@@ -1914,6 +1914,8 @@
+ #if (NGX_HTTP_SPDY)
+         addrs6[i].conf.spdy = addr[i].opt.spdy;
+ #endif
++        addrs6[i].conf.proxy_protocol = addr[i].opt.proxy_protocol;
++
+ 
+         if (addr[i].hash.buckets == NULL
+             && (addr[i].wc_head == NULL
+diff -urN nginx-1.7.1_old/src/http/ngx_http_core_module.c nginx-1.7.1/src/http/ngx_http_core_module.c
+--- nginx-1.7.1_old/src/http/ngx_http_core_module.c	2014-06-11 10:01:19.451020278 +0800
++++ nginx-1.7.1/src/http/ngx_http_core_module.c	2014-06-11 09:14:45.494967391 +0800
+@@ -4271,6 +4271,9 @@
+         if (ngx_strcmp(value[n].data, "proxy_protocol") == 0) {
+             lsopt.proxy_protocol = 1;
+             continue;
++        }else if (ngx_strcmp(value[n].data, "proxy_protocol_v2") == 0) {
++            lsopt.proxy_protocol = 2;
++            continue;
+         }
+ 
+         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
+diff -urN nginx-1.7.1_old/src/http/ngx_http_core_module.h nginx-1.7.1/src/http/ngx_http_core_module.h
+--- nginx-1.7.1_old/src/http/ngx_http_core_module.h	2014-06-11 10:01:19.451020278 +0800
++++ nginx-1.7.1/src/http/ngx_http_core_module.h	2014-06-11 09:14:45.506961166 +0800
+@@ -82,7 +82,7 @@
+     unsigned                   ipv6only:1;
+ #endif
+     unsigned                   so_keepalive:2;
+-    unsigned                   proxy_protocol:1;
++    unsigned                   proxy_protocol:2;
+ 
+     int                        backlog;
+     int                        rcvbuf;
+@@ -244,7 +244,7 @@
+ #if (NGX_HTTP_SPDY)
+     unsigned                   spdy:1;
+ #endif
+-    unsigned                   proxy_protocol:1;
++    unsigned                   proxy_protocol:2;
+ };
+ 
+ 
+diff -urN nginx-1.7.1_old/src/http/ngx_http_request.c nginx-1.7.1/src/http/ngx_http_request.c
+--- nginx-1.7.1_old/src/http/ngx_http_request.c	2014-06-11 10:01:19.451020278 +0800
++++ nginx-1.7.1/src/http/ngx_http_request.c	2014-06-11 09:14:45.482973618 +0800
+@@ -343,8 +343,10 @@
+     }
+ #endif
+ 
++
+     if (hc->addr_conf->proxy_protocol) {
+-        hc->proxy_protocol = 1;
++
++        hc->proxy_protocol =  hc->addr_conf->proxy_protocol;
+         c->log->action = "reading PROXY protocol";
+     }
+ 
+@@ -465,9 +467,10 @@
+     b->last += n;
+ 
+     if (hc->proxy_protocol) {
+-        hc->proxy_protocol = 0;
+ 
+-        p = ngx_proxy_protocol_parse(c, b->pos, b->last);
++        p = ngx_proxy_protocol_parse(c, b->pos, b->last, hc->proxy_protocol);
++
++        hc->proxy_protocol = 0;
+ 
+         if (p == NULL) {
+             ngx_http_close_connection(c);
+@@ -672,10 +675,10 @@
+     }
+ 
+     if (hc->proxy_protocol) {
+-        hc->proxy_protocol = 0;
+ 
+-        p = ngx_proxy_protocol_parse(c, buf, buf + n);
++        p = ngx_proxy_protocol_parse(c, buf, buf + n, hc->proxy_protocol );
+ 
++        hc->proxy_protocol = 0;
+         if (p == NULL) {
+             ngx_http_close_connection(c);
+             return;
+diff -urN nginx-1.7.1_old/src/http/ngx_http_request.h nginx-1.7.1/src/http/ngx_http_request.h
+--- nginx-1.7.1_old/src/http/ngx_http_request.h	2014-06-11 10:01:19.451020278 +0800
++++ nginx-1.7.1/src/http/ngx_http_request.h	2014-06-11 09:14:45.494967391 +0800
+@@ -311,7 +311,7 @@
+ #if (NGX_HTTP_SSL)
+     unsigned                          ssl:1;
+ #endif
+-    unsigned                          proxy_protocol:1;
++    unsigned                          proxy_protocol:2;
+ } ngx_http_connection_t;
+ 
+ 
+diff -urN nginx-1.7.1_old/src/http/ngx_http_upstream.c nginx-1.7.1/src/http/ngx_http_upstream.c
+--- nginx-1.7.1_old/src/http/ngx_http_upstream.c	2014-06-11 10:01:19.451020278 +0800
++++ nginx-1.7.1/src/http/ngx_http_upstream.c	2014-06-11 09:14:45.554936262 +0800
+@@ -33,6 +33,9 @@
+     ngx_http_upstream_t *u);
+ static void ngx_http_upstream_send_request(ngx_http_request_t *r,
+     ngx_http_upstream_t *u);
++static void ngx_http_upstream_send_proxy_protocol(ngx_http_request_t *r,
++    ngx_http_upstream_t *u);
++
+ static void ngx_http_upstream_send_request_handler(ngx_http_request_t *r,
+     ngx_http_upstream_t *u);
+ static void ngx_http_upstream_process_header(ngx_http_request_t *r,
+@@ -1322,7 +1325,18 @@
+     }
+ 
+     u->request_sent = 0;
++#if (NGX_HTTP_SSL)
++    if (u->conf->send_proxy_protocol && !(u->ssl && c->ssl == NULL)) {
++        ngx_http_upstream_send_proxy_protocol(r, u);
++        return ;
++    }
++#else
++  if (u->conf->send_proxy_protocol && !(u->ssl)) {
++        ngx_http_upstream_send_proxy_protocol(r, u);
++        return ;
++    }
+ 
++#endif
+     if (rc == NGX_AGAIN) {
+         ngx_add_timer(c->write, u->conf->connect_timeout);
+         return;
+@@ -1684,6 +1698,140 @@
+     }
+ }
+ 
++static void 
++ngx_http_upstream_send_proxy_protocol(ngx_http_request_t *r, ngx_http_upstream_t *u)
++{
++
++    ngx_connection_t        *cc;
++    ngx_connection_t        *uc;
++    ngx_buf_t               *b;
++    ngx_int_t                rc;
++    ngx_chain_t             *pp_string;
++
++    socklen_t                addrlen = NGX_SOCKADDRLEN;
++    size_t len;
++
++    cc = r->connection;
++    uc = u->peer.connection;
++
++    struct sockaddr *addr;
++    struct sockaddr_storage  sa_dst;
++
++    if (cc->proxy_protocol_flag == 1)
++    {
++        len = 17 + r->connection->proxy_protocol_addr.len + r->connection->proxy_protocol_dst.len +  r->connection->proxy_protocol_addr_port.len +  r->connection->proxy_protocol_dst_port.len;  
++        b = ngx_create_temp_buf(uc->pool, len);
++        if (b==NULL)
++        {
++            return;
++        }
++
++        pp_string = ngx_alloc_chain_link(uc->pool);
++        if (pp_string == NULL) {
++            return ;
++        }
++        pp_string->buf = b;
++        pp_string->next = NULL;
++        b->last = ngx_cpymem(b->last, "PROXY ", sizeof("PROXY ") - 1);
++
++        if (cc->proxy_protocol_version == AF_INET)
++        {
++            b->last = ngx_cpymem(b->last, "TCP4 ", sizeof("TCP4 ") - 1);
++        }else if (cc->proxy_protocol_version == AF_INET6)
++        {
++            b->last = ngx_cpymem(b->last, "TCP6 ", sizeof("TCP4 ") - 1);
++        }
++        b->last = ngx_copy(b->last, cc->proxy_protocol_addr.data, r->connection->proxy_protocol_addr.len);
++        b->last = ngx_copy(b->last," ",1);
++        b->last = ngx_copy(b->last, cc->proxy_protocol_dst.data, r->connection->proxy_protocol_dst.len);
++        b->last = ngx_copy(b->last," ",1);
++        b->last = ngx_copy(b->last, cc->proxy_protocol_addr_port.data, r->connection->proxy_protocol_addr_port.len);
++        b->last = ngx_copy(b->last," ",1);
++        b->last = ngx_copy(b->last, cc->proxy_protocol_dst_port.data, r->connection->proxy_protocol_dst_port.len);
++        b->last = ngx_copy(b->last,CRLF,2);
++        rc = ngx_output_chain(&u->output, pp_string);
++
++        if (rc == NGX_ERROR) {
++            ngx_http_upstream_next(r, u, NGX_HTTP_UPSTREAM_FT_ERROR);
++            return;
++        }
++    }else{
++
++        ngx_log_error(NGX_LOG_NOTICE, ngx_cycle->log, 0, "  there is no    proxy protocol       previous \n");
++       addr= cc->sockaddr;
++       char src_ip[40],dst_ip[40];
++       char src_port[8],dst_port[8];
++
++       if( addr->sa_family == AF_INET)
++       {
++           //get request src
++            struct sockaddr_in *addr_in = (struct sockaddr_in *) addr;
++            inet_ntop(AF_INET, &addr_in->sin_addr,  src_ip, sizeof( src_ip));
++            snprintf(src_port,sizeof(src_port),"%u",ntohs(addr_in->sin_port));
++          //get request dst
++            getsockname(cc->fd, (struct sockaddr *) &sa_dst, &addrlen);
++            addr_in = (struct sockaddr_in *) &sa_dst;
++            inet_ntop(AF_INET, &addr_in->sin_addr,  dst_ip, sizeof( dst_ip));
++            snprintf(dst_port,sizeof(src_port),"%u",ntohs(addr_in->sin_port));
++
++       }else if (addr->sa_family == AF_INET6)
++       {
++            struct sockaddr_in6 *addr6_in = (struct sockaddr_in6 *) addr;
++            inet_ntop(AF_INET6, &addr6_in->sin6_addr,src_ip,sizeof(src_ip));
++            snprintf(src_port,sizeof(src_port),"%u", ntohs(addr6_in->sin6_port));
++
++            getsockname(cc->fd, (struct sockaddr *) &sa_dst, &addrlen);
++            addr6_in = (struct sockaddr_in6 *) &sa_dst;
++            inet_ntop(AF_INET6, &addr6_in->sin6_addr,dst_ip,sizeof(dst_ip));
++            snprintf(dst_port,sizeof(dst_port),"%u", ntohs(addr6_in->sin6_port));
++       }
++       // packet length
++       len = 17 + strlen(src_ip) + strlen(dst_ip) + strlen(src_port) + strlen(dst_port);
++       b = ngx_create_temp_buf(uc->pool, len);
++       if (b==NULL)
++       {
++           return;
++       }
++
++       pp_string = ngx_alloc_chain_link(uc->pool);
++       if (pp_string == NULL) {
++           return ;
++       }
++       pp_string->buf = b;
++       pp_string->next = NULL;
++       b->last = ngx_cpymem(b->last, "PROXY ", sizeof("PROXY ") - 1);
++
++       if ( addr->sa_family  == AF_INET)
++       {
++           b->last = ngx_cpymem(b->last, "TCP4 ", sizeof("TCP4 ") - 1);
++       }else if (addr->sa_family  == AF_INET6)
++       {
++           b->last = ngx_cpymem(b->last, "TCP6 ", sizeof("TCP6 ") - 1);
++       }else if( strchr(src_ip,':') == NULL)
++       {
++           b->last = ngx_cpymem(b->last, "TCP4 ", sizeof("TCP4 ") - 1);
++       }else {
++           b->last = ngx_cpymem(b->last, "TCP6 ", sizeof("TCP6 ") - 1);
++       }
++
++       b->last = ngx_copy(b->last, src_ip, strlen(src_ip));
++       b->last = ngx_copy(b->last," ",1);
++       b->last = ngx_copy(b->last, dst_ip, strlen(dst_ip));
++       b->last = ngx_copy(b->last," ",1);
++       b->last = ngx_copy(b->last, src_port, strlen(src_port));
++       b->last = ngx_copy(b->last," ",1);
++       b->last = ngx_copy(b->last, dst_port, strlen(dst_port));
++       b->last = ngx_copy(b->last,"\r\n",2);
++       rc = ngx_output_chain(&u->output, pp_string);
++
++       if (rc == NGX_ERROR) {
++           ngx_http_upstream_next(r, u, NGX_HTTP_UPSTREAM_FT_ERROR);
++           return;
++       }
++
++    }
++
++}
+ 
+ static void
+ ngx_http_upstream_send_request_handler(ngx_http_request_t *r,
+diff -urN nginx-1.7.1_old/src/http/ngx_http_upstream.h nginx-1.7.1/src/http/ngx_http_upstream.h
+--- nginx-1.7.1_old/src/http/ngx_http_upstream.h	2014-06-11 10:01:19.451020278 +0800
++++ nginx-1.7.1/src/http/ngx_http_upstream.h	2014-06-11 09:14:45.450990220 +0800
+@@ -191,6 +191,7 @@
+     signed                           store:2;
+     unsigned                         intercept_404:1;
+     unsigned                         change_buffering:1;
++    ngx_flag_t                       send_proxy_protocol;   
+ 
+ #if (NGX_HTTP_SSL)
+     ngx_ssl_t                       *ssl;
+diff -urN nginx-1.7.1_old/src/http/ngx_http_variables.c nginx-1.7.1/src/http/ngx_http_variables.c
+--- nginx-1.7.1_old/src/http/ngx_http_variables.c	2014-06-11 10:01:19.451020278 +0800
++++ nginx-1.7.1/src/http/ngx_http_variables.c	2014-06-11 09:14:45.454988144 +0800
+@@ -58,6 +58,16 @@
+     ngx_http_variable_value_t *v, uintptr_t data);
+ static ngx_int_t ngx_http_variable_proxy_protocol_addr(ngx_http_request_t *r,
+     ngx_http_variable_value_t *v, uintptr_t data);
++
++static ngx_int_t ngx_http_variable_proxy_protocol_addr_port(ngx_http_request_t *r,
++    ngx_http_variable_value_t *v, uintptr_t data);
++
++static ngx_int_t ngx_http_variable_proxy_protocol_dst(ngx_http_request_t *r,
++    ngx_http_variable_value_t *v, uintptr_t data);
++
++static ngx_int_t ngx_http_variable_proxy_protocol_dst_port(ngx_http_request_t *r,
++    ngx_http_variable_value_t *v, uintptr_t data);
++
+ static ngx_int_t ngx_http_variable_server_addr(ngx_http_request_t *r,
+     ngx_http_variable_value_t *v, uintptr_t data);
+ static ngx_int_t ngx_http_variable_server_port(ngx_http_request_t *r,
+@@ -192,6 +202,15 @@
+     { ngx_string("proxy_protocol_addr"), NULL,
+       ngx_http_variable_proxy_protocol_addr, 0, 0, 0 },
+ 
++    { ngx_string("proxy_protocol_addr_port"), NULL,
++      ngx_http_variable_proxy_protocol_addr_port, 0, 0, 0 },
++
++    { ngx_string("proxy_protocol_dst"), NULL,
++      ngx_http_variable_proxy_protocol_dst, 0, 0, 0 },
++
++    { ngx_string("proxy_protocol_dst_port"), NULL,
++      ngx_http_variable_proxy_protocol_dst_port, 0, 0, 0 },
++
+     { ngx_string("server_addr"), NULL, ngx_http_variable_server_addr, 0, 0, 0 },
+ 
+     { ngx_string("server_port"), NULL, ngx_http_variable_server_port, 0, 0, 0 },
+@@ -1244,6 +1263,47 @@
+ 
+ 
+ static ngx_int_t
++ngx_http_variable_proxy_protocol_addr_port(ngx_http_request_t *r,
++        ngx_http_variable_value_t *v, uintptr_t data)
++{
++    v->len = r->connection->proxy_protocol_addr_port.len;
++    v->valid = 1;
++    v->no_cacheable = 0;
++    v->not_found = 0;
++    v->data = r->connection->proxy_protocol_addr_port.data;
++
++    return NGX_OK;
++}
++
++
++static ngx_int_t
++ngx_http_variable_proxy_protocol_dst(ngx_http_request_t *r,
++        ngx_http_variable_value_t *v, uintptr_t data)
++{
++    v->len = r->connection->proxy_protocol_dst.len;
++    v->valid = 1;
++    v->no_cacheable = 0;
++    v->not_found = 0;
++    v->data = r->connection->proxy_protocol_dst.data;
++
++    return NGX_OK;
++}
++
++
++static ngx_int_t
++ngx_http_variable_proxy_protocol_dst_port(ngx_http_request_t *r,
++        ngx_http_variable_value_t *v, uintptr_t data)
++{
++    v->len = r->connection->proxy_protocol_dst_port.len;
++    v->valid = 1;
++    v->no_cacheable = 0;
++    v->not_found = 0;
++    v->data = r->connection->proxy_protocol_dst_port.data;
++
++    return NGX_OK;
++}
++
++static ngx_int_t
+ ngx_http_variable_server_addr(ngx_http_request_t *r,
+     ngx_http_variable_value_t *v, uintptr_t data)
+ {

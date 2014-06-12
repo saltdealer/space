@@ -1,0 +1,7 @@
+#/bin/sh -e 
+
+killall -9 nginx
+/usr/local/nginx/sbin/nginx -c /home/xj/xiaoj/nginx_haproxy/nginx.conf
+/usr/local/nginx/sbin/nginx  -c  /home/xj/xiaoj/nginx_haproxy/nginx_80.conf
+
+
