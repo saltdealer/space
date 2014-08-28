@@ -1,12 +1,12 @@
 -- init database
 
-drop database if exists awesome;
+drop database if exists blog;
 
-create database awesome;
+create database blog;
 
-use awesome;
+use blog;
 
-grant select, insert, update, delete on awesome.* to 'www-data'@'localhost' identified by 'www-data';
+grant select, insert, update, delete on blog.* to 'root'@'localhost' identified by 'xj';
 
 create table users (
     `id` varchar(50) not null,
@@ -49,4 +49,4 @@ create table comments (
 -- email / password:
 -- admin@example.com / password
 
-insert into users (`id`, `email`, `password`, `admin`, `name`, `created_at`) values ('0010018336417540987fff4508f43fbaed718e263442526000', 'admin@example.com', '5f4dcc3b5aa765d61d8327deb882cf99', 1, 'Administrator', 1402909113.628);
+insert into users (`id`, `email`, `password`, `admin`, `name`, `created_at`) values ('0010018336417540987fff4508f43fbaed718e263442526000', 'jjxx2004@gmail.com', '30a756507840db3af6a8645c15c485e0', 1, 'GoodOak', 1402909113.628);

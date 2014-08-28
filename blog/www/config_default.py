@@ -12,8 +12,8 @@ configs = {
         'host': '127.0.0.1',
         'port': 3306,
         'user': 'root',
-        'password': '114763xj',
-        'database': 'test'
+        'password': 'xj',
+        'database': 'blog'
     },
     'session': {
         'secret': 'AwEsOmE'

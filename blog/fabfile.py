@@ -12,18 +12,18 @@ import os, re
 from datetime import datetime
 from fabric.api import *
 
-env.user = 'michael'
+env.user = 'root'
 env.sudo_user = 'root'
-env.hosts = ['192.168.0.3']
+env.hosts = ['191.101.9.76']
 
-db_user = 'www-data'
-db_password = 'www-data'
+db_user = 'root'
+db_password = 'xj'
 
-_TAR_FILE = 'dist-awesome.tar.gz'
+_TAR_FILE = 'dist-blog.tar.gz'
 
 _REMOTE_TMP_TAR = '/tmp/%s' % _TAR_FILE
 
-_REMOTE_BASE_DIR = '/srv/awesome'
+_REMOTE_BASE_DIR = '/srv/blog'
 
 def _current_path():
     return os.path.abspath('.')
@@ -48,7 +48,7 @@ def build():
     '''
     Build dist package.
     '''
-    includes = ['static', 'templates', 'transwarp', 'favicon.ico', '*.py']
+    includes = ['static', 'templates', 'transwarp', 'favicon.ico', '*.py','schema.sql']
     excludes = ['test', '.*', '*.pyc', '*.pyo']
     local('rm -f dist/%s' % _TAR_FILE)
     with lcd(os.path.join(_current_path(), 'www')):
