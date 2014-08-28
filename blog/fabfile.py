@@ -36,9 +36,9 @@ def backup():
     Dump entire database on server and backup to local.
     '''
     dt = _now()
-    f = 'backup-awesome-%s.sql' % dt
+    f = 'backup-blog-%s.sql' % dt
     with cd('/tmp'):
-        run('mysqldump --user=%s --password=%s --skip-opt --add-drop-table --default-character-set=utf8 --quick awesome > %s' % (db_user, db_password, f))
+        run('mysqldump --user=%s --password=%s --skip-opt --add-drop-table --default-character-set=utf8 --quick blog > %s' % (db_user, db_password, f))
         run('tar -czvf %s.tar.gz %s' % (f, f))
         get('%s.tar.gz' % f, '%s/backup/' % _current_path())
         run('rm -f %s' % f)
@@ -71,8 +71,8 @@ def deploy():
         sudo('chown www-data:www-data www')
         sudo('chown -R www-data:www-data %s' % newdir)
     with settings(warn_only=True):
-        sudo('supervisorctl stop awesome')
-        sudo('supervisorctl start awesome')
+        sudo('supervisorctl stop blog')
+        sudo('supervisorctl start blog')
         sudo('/etc/init.d/nginx reload')
 
 RE_FILES = re.compile('\r?\n')
@@ -119,8 +119,8 @@ def rollback():
         sudo('ln -s %s www' % old)
         sudo('chown www-data:www-data www')
         with settings(warn_only=True):
-            sudo('supervisorctl stop awesome')
-            sudo('supervisorctl start awesome')
+            sudo('supervisorctl stop blog')
+            sudo('supervisorctl start blog')
             sudo('/etc/init.d/nginx reload')
         print ('ROLLBACKED OK.')
 
@@ -156,14 +156,14 @@ def restore2local():
     print ('Start restore to local database...')
     p = raw_input('Input mysql root password: ')
     sqls = [
-        'drop database if exists awesome;',
-        'create database awesome;',
-        'grant select, insert, update, delete on awesome.* to \'%s\'@\'localhost\' identified by \'%s\';' % (db_user, db_password)
+        'drop database if exists blog;',
+        'create database blog;',
+        'grant select, insert, update, delete on blog.* to \'%s\'@\'localhost\' identified by \'%s\';' % (db_user, db_password)
     ]
     for sql in sqls:
         local(r'mysql -uroot -p%s -e "%s"' % (p, sql))
     with lcd(backup_dir):
         local('tar zxvf %s' % restore_file)
-    local(r'mysql -uroot -p%s awesome < backup/%s' % (p, restore_file[:-7]))
+    local(r'mysql -uroot -p%s blog < backup/%s' % (p, restore_file[:-7]))
     with lcd(backup_dir):
         local('rm -f %s' % restore_file[:-7])
