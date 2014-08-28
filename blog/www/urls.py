@@ -220,7 +220,7 @@ def api_create_blog():
     if not content:
         raise APIValueError('content', 'content cannot be empty.')
     user = ctx.request.user
-    blog = Blog(user_id=user.id, user_name=user.name, name=name, summary=summary, content=content)
+    blog = Blog(user_id=user.id, user_name=user.name, name=name, summary=summary, content=content, user_image=user.image)
     blog.insert()
     return blog
 
