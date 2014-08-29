@@ -236,7 +236,7 @@ _RESPONSE_HEADERS = (
 
 _RESPONSE_HEADER_DICT = dict(zip(map(lambda x: x.upper(), _RESPONSE_HEADERS), _RESPONSE_HEADERS))
 
-_HEADER_X_POWERED_BY = ('X-Powered-By', 'transwarp/1.0')
+_HEADER_X_POWERED_BY = ('X-Powered-By', 'oak/1.0')
 
 class HttpError(Exception):
     '''
