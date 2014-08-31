@@ -10,7 +10,7 @@ import markdown2
 from transwarp.web import get, post, ctx, view, interceptor, seeother, notfound
 
 from apis import api, Page, APIError, APIValueError, APIPermissionError, APIResourceNotFoundError
-from models import User, Blog, Comment
+from models import User, Blog, Comment,Category
 from config import configs
 
 _COOKIE_NAME = 'awesession'
@@ -76,8 +76,9 @@ def manage_interceptor(next):
 @view('blogs.html')
 @get('/')
 def index():
-    blogs, page = _get_blogs_by_page()
-    return dict(page=page, blogs=blogs, user=ctx.request.user)
+    blogs, page,cat = _get_blogs_by_page()
+    size = len(blogs)
+    return dict(page=page, blogs=blogs, user=ctx.request.user,size=size,cat=cat)
 
 @view('blog.html')
 @get('/blog/:blog_id')
@@ -150,10 +151,17 @@ def register():
     return dict()
 
 def _get_blogs_by_page():
-    total = Blog.count_all()
-    page = Page(total, _get_page_index())
-    blogs = Blog.find_by('order by created_at desc limit ?,?', page.offset, page.limit)
-    return blogs, page
+    cat = int(ctx.request.get('cat', '0'))
+    if cat!=0:
+        total = Blog.count_by('where category=?',cat)
+        page = Page(total, _get_page_index())
+        blogs = Blog.find_by('where category=? order by created_at desc limit ?,?',cat, page.offset, page.limit)
+    else:
+        total = Blog.count_all()
+        page = Page(total, _get_page_index())
+        blogs = Blog.find_by('order by created_at desc limit ?,?', page.offset, page.limit)
+
+    return blogs, page, cat
 
 @get('/manage/')
 def manage_index():
@@ -191,7 +199,7 @@ def manage_users():
 @get('/api/blogs')
 def api_get_blogs():
     format = ctx.request.get('format', '')
-    blogs, page = _get_blogs_by_page()
+    blogs, page ,cat = _get_blogs_by_page()
     if format=='html':
         for blog in blogs:
             blog.content = markdown2.markdown(blog.content)
@@ -209,10 +217,11 @@ def api_get_blog(blog_id):
 @post('/api/blogs')
 def api_create_blog():
     check_admin()
-    i = ctx.request.input(name='', summary='', content='')
+    i = ctx.request.input(name='', summary='', content='',category='')
     name = i.name.strip()
     summary = i.summary.strip()
     content = i.content.strip()
+    category = i.category.strip()
     if not name:
         raise APIValueError('name', 'name cannot be empty.')
     if not summary:
@@ -220,7 +229,7 @@ def api_create_blog():
     if not content:
         raise APIValueError('content', 'content cannot be empty.')
     user = ctx.request.user
-    blog = Blog(user_id=user.id, user_name=user.name, name=name, summary=summary, content=content, user_image=user.image)
+    blog = Blog(user_id=user.id, user_name=user.name, name=name, summary=summary, content=content, user_image=user.image,category=category)
     blog.insert()
     return blog
 
@@ -300,3 +309,12 @@ def api_get_users():
     for u in users:
         u.password = '******'
     return dict(users=users, page=page)
+@api
+@get('/api/category')
+def api_get_category():
+    b = dict()
+    cate = Category.find_all() 
+    return cate
+    for c in cate:
+        b[c.category_id] = c.category
+    return b
