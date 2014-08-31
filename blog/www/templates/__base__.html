@@ -24,9 +24,10 @@
         <div class="uk-container uk-container-center">
             <a href="/" class="uk-navbar-brand">GoodOak</a>
             <ul class="uk-navbar-nav">
-                <li data-url="blogs"><a href="/"><i class="uk-icon-home"></i> 日志</a></li>
-                <li><a target="_blank" href="http"><i class="uk-icon-book"></i> 教程</a></li>
-                <li><a target="_blank" href="https"><i class="uk-icon-code"></i> 源码</a></li>
+                <li  {% if cat==1 %} data-url="blogs" {% endif %} ><a href="/?cat=1"><i class="uk-icon-code"></i> 学习笔记</a></li>
+                <li{% if cat==2 %} data-url="blogs" {% endif %}> <a href="/?cat=2"><i class="uk-icon-star"></i> 生活点滴</a></li>
+                <li {% if cat==3 %} data-url="blogs" {% endif %}> <a href="/?cat=3"><i class="uk-icon-beer"></i>其他</a></li>
+              <!--  <li><a target="_blank" href="/?cat=3"><i class="uk-icon-beer"></i>其他</a></li> -->
             </ul>
             <div class="uk-navbar-flip">
                 <ul class="uk-navbar-nav">
@@ -57,14 +58,16 @@
         </div>
     </div>
 
+
+
     <div class="uk-margin-large-top" style="background-color:#eee; border-top:1px solid #ccc;">
         <div class="uk-container uk-container-center uk-text-center">
             <div class="uk-panel uk-margin-top uk-margin-bottom">
                 <p>
-                    <a target="_blank" href="http" class="uk-icon-button uk-icon-weibo"></a>
-                    <a target="_blank" href="https://" class="uk-icon-button uk-icon-github"></a>
-                    <a target="_blank" href="http://www" class="uk-icon-button uk-icon-linkedin-square"></a>
-                    <a target="_blank" href="https:/" class="uk-icon-button uk-icon-twitter"></a>
+                    <a target="_blank" href="http://weibo.com/u/1738174773/" class="uk-icon-button uk-icon-weibo"></a>
+                    <a target="_blank" href="https://github.com/saltdealer" class="uk-icon-button uk-icon-github"></a>
+                    <a target="_blank" href="http://www.linkedin.com/profile/view?id=338874862" class="uk-icon-button uk-icon-linkedin-square"></a>
+                    <a target="_blank" href="https://twitter.com/Feb_Oak" class="uk-icon-button uk-icon-twitter"></a>
                 </p>
                 <p>Powered by <a href="http://www.goodoak.cn">python webapp</a>. Copyright &copy; 2014. [<a href="/manage/" target="_blank">Manage</a>]</p>
                 <p><a href="http://www.goodoak.com/" target="_blank">www.GoodOak.cn</a>. All rights reserved.</p>
