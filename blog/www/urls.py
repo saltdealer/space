@@ -237,10 +237,11 @@ def api_create_blog():
 @post('/api/blogs/:blog_id')
 def api_update_blog(blog_id):
     check_admin()
-    i = ctx.request.input(name='', summary='', content='')
+    i = ctx.request.input(name='', summary='', content='',category='')
     name = i.name.strip()
     summary = i.summary.strip()
     content = i.content.strip()
+    category = i.category.strip()
     if not name:
         raise APIValueError('name', 'name cannot be empty.')
     if not summary:
@@ -249,10 +250,11 @@ def api_update_blog(blog_id):
         raise APIValueError('content', 'content cannot be empty.')
     blog = Blog.get(blog_id)
     if blog is None:
-        raise APIResourceNotFoundError('Blog')
+        print 'sdfdsf'
     blog.name = name
     blog.summary = summary
     blog.content = content
+    blog.category =category
     blog.update()
     return blog
 
