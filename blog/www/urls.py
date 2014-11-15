@@ -73,6 +73,12 @@ def manage_interceptor(next):
         return next()
     raise seeother('/signin')
 
+@view('test.html')
+@get('/test')
+def test():
+
+    return {'string':3} 
+
 @view('blogs.html')
 @get('/')
 def index():
@@ -175,6 +181,11 @@ def manage_comments():
 @view('manage_blog_list.html')
 @get('/manage/blogs')
 def manage_blogs():
+    return dict(page_index=_get_page_index(), user=ctx.request.user)
+
+@view('manage_links_list.html')
+@get('/manage/links')
+def manage_links():
     return dict(page_index=_get_page_index(), user=ctx.request.user)
 
 @view('manage_blog_edit.html')

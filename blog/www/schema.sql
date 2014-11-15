@@ -60,6 +60,12 @@ grant select, insert, update, delete on blog.* to 'root'@'localhost' identified 
     insert into category(`category_id`,`category`) values ( '2','生活记录');
     insert into category(`category_id`,`category`) values ( '3','其他');
 
+    create table links (
+            `link_id` varchar(50) not null,
+            `link_type` varchar(50) not null,
+            `links` varchar(200) not null,
+            primary key (`link_id`)
+            ) engine=innodb default charset=utf8;
 
     -- email / password:
     -- admin@example.com / password
