@@ -15,7 +15,7 @@ from fabric.api import *
 env.user = 'root'
 env.sudo_user = 'root'
 env.hosts = ['191.101.9.76']
-env.password='114763xj'
+env.password='******'
 
 db_user = 'root'
 db_password = 'xj'
