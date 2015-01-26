@@ -10,12 +10,10 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import com.MyFunApp.NewFun.BaseIActivity;
 import com.MyFunApp.NewFun.R;
-import com.MyFunApp.NewFun.Net.CONS;
 import com.MyFunApp.NewFun.Util.share_preferences;
 import com.MyFunApp.NewFun.View.NumericWheelAdapter;
 import com.MyFunApp.NewFun.View.OnWheelChangedListener;
@@ -31,12 +29,9 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewStub;
 import android.view.Window;
@@ -44,12 +39,9 @@ import android.view.animation.ScaleAnimation;
 import android.view.animation.Transformation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-//import android.widget.LinearLayout.LayoutParams;
 import android.widget.RelativeLayout.LayoutParams;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
-
 
 public class RegInfoActivity extends BaseIActivity implements android.view.View.OnClickListener {
 
@@ -76,15 +68,12 @@ public class RegInfoActivity extends BaseIActivity implements android.view.View.
 	private TextView show_ageTextView;
 	private RadioGroup reg_gender_radio;
 	
-	private String avatar_img_url ,local_image_path,account;
+	private String  local_image_path,account;
 
 	private int ID[]= {R.id.dialog_camera,R.id.dialog_photo, R.id.photo_cancel};
-	private static final String gender[]={"f","m"};
 	private static final int PHOTO_REQUEST_TAKEPHOTO = 1;
 	private static final int PHOTO_REQUEST_GALLERY = 2;
 	private static final int PHOTO_REQUEST_CUT = 3;
-	private static final int PHOTO_NEXT = 4;
-	private static final int INFO_NEXT = 5;
 	private static int START_YEAR = 1964, END_YEAR = 2015;
 	WheelView wv_year = null;
 	WheelView wv_month = null;
@@ -238,29 +227,6 @@ public class RegInfoActivity extends BaseIActivity implements android.view.View.
 
 	}
 
-	Handler handler = new Handler() {
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case PHOTO_NEXT:
-				int re = (Integer) msg.obj;
-				if(re ==0){
-					Toast.makeText(RegInfoActivity.this, "�� , photo uploaded", Toast.LENGTH_LONG).show();
-				}
-				break;
-			case INFO_NEXT:
-				int re1 = (Integer) msg.obj;
-				if( re1 == 0){
-					Toast.makeText(RegInfoActivity.this, "�� , ע��ɹ�", Toast.LENGTH_LONG).show();
-				}
-				RegInfoActivity.this.dissmis_photo_Dailog();
-				break;
-			default:
-				break;
-			}
-		}
-	};
-
-
 	@Override
 	protected void initViews() {
 		// TODO Auto-generated method stub
@@ -303,8 +269,6 @@ public class RegInfoActivity extends BaseIActivity implements android.view.View.
 			int year = calendar.get(Calendar.YEAR);
 			int month = calendar.get(Calendar.MONTH);
 			int day = calendar.get(Calendar.DATE);
-			int hour = calendar.get(Calendar.HOUR_OF_DAY);
-			int minute = calendar.get(Calendar.MINUTE);
 
 			// 添加大小月月份并将其转换为list,方便之后的判断
 			String[] months_big = { "1", "3", "5", "7", "8", "10", "12" };
@@ -313,8 +277,6 @@ public class RegInfoActivity extends BaseIActivity implements android.view.View.
 			final List<String> list_big = Arrays.asList(months_big);
 			final List<String> list_little = Arrays.asList(months_little);
 
-			// 找到dialog的布局文件
-			LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
 
 			// 年
 			wv_year = (WheelView) dataView.findViewById(R.id.year);
@@ -537,7 +499,6 @@ public class RegInfoActivity extends BaseIActivity implements android.view.View.
 		final String cookString = show_cookTextView.getText().toString();
 		final String tasteString = show_tasteTextView.getText().toString();
 		final String location = show_locationTextView.getText().toString();
-		final String birthday = show_ageTextView.getText().toString();
 		if(nicknameString.equals("")||cookString.equals("cookString") || local_image_path ==null || tasteString.equals("cookString") || location.equals("cookString")  ){
 			showCustomToast("请填写完整");
 			//return;
@@ -549,92 +510,9 @@ public class RegInfoActivity extends BaseIActivity implements android.view.View.
 		Intent intent_next = new Intent(RegInfoActivity.this, MainActivity.class);
 		UpdateUserTask updateusertask = new UpdateUserTask(RegInfoActivity.this,account,nicknameString, genderString,  local_image_path,intent_next);
 		putAsyncTask_sii(updateusertask);
-/*
-		putAsyncTask(new AsyncTask<Void, Void, Integer>() {
-			
-			@Override
-			protected void onPreExecute() {
-				super.onPreExecute();
-				showLoadingDialog("正在提交...");
-			}
-			@Override
-			protected Integer doInBackground(Void... params) {
-				int re;
-				try {
-					Log.i("invoke", "uploadimage");
-					re = upload_image();
-					if( re !=0){
-						return -1;
-					}
-					re = update_usr_info(nicknameString, genderString, cookString, tasteString, location,birthday);
-					if( re !=0){
-						return -2;
-					}
-					return 0;
-				} catch (NoSuchAlgorithmException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (UnsupportedEncodingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				return -1;
-			}
-			@Override
-			protected void onPostExecute(Integer result) {
-				super.onPostExecute(result);
-				dismissLoadingDialog();
-				if (result == 0) {
-					showCustomToast("注册成功");
-			//		Intent intent = new Intent(RegInfoActivity.this, LoginActivity.class);
-		//			startActivity(intent);
-		//			finish();
-				} else {
-					showCustomToast("注册失败");
-				}
-			}
-		});
-		*/
+
 	}
 	
-	protected void click_finish(){
-		final String nicknameString = reg_nickname.getText().toString();
-		final String genderString = "m";
-		final String cookString = show_cookTextView.getText().toString();
-		final String tasteString = show_tasteTextView.getText().toString();
-		final String location = show_locationTextView.getText().toString();
-
-		Runnable  runnable_next = new Runnable() {
-			@Override
-			public void run() {
-				int re;
-			}
-		};
-		new Thread(runnable_next).start();
-	}
-	private int update_usr_info(String nickname,String gender, String cook, String taste ,String location,String birthday){
-		
-		HashMap<String, String> param = new HashMap<String, String>();
-		
-		String tokenString = share_preferences.get_value(this,"user_info","token");
-		HashMap<String, String> reHashMap = null;
-		
-		CONS.token = tokenString;
-		param.put("nickname", nickname);
-		param.put("gender", gender);
-		param.put("food_style", taste);
-		param.put("food_category", cook);
-		param.put("nickname", nickname);
-		param.put("profile_image_url", this.avatar_img_url);
-		param.put("birthday", birthday);
-		Log.i("invoke", "update re   "+reHashMap.toString());
-		
-		if (reHashMap != null){
-			return 0;
-		}else{
-			return -1;
-		}
-	}
 	public void onBackPressed()
 	{
 	    if ((this.photo_Dailog != null) && (this.photo_Dailog.getVisibility() == View.VISIBLE))

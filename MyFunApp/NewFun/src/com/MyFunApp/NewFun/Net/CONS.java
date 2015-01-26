@@ -32,7 +32,7 @@ import com.squareup.okhttp.Response;
 public class CONS {
 	private static OkHttpClient client = null;
 	
-	public static final String BASE_URL = "http://172.21.253.40:9001";
+	public static final String BASE_URL = "http://goodoak.cn";
 	public static String token;
 	public static String SESSIONID;
 	

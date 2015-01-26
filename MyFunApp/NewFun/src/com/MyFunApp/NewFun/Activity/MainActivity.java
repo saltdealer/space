@@ -59,20 +59,14 @@ public class MainActivity extends BaseIActivity {
 	private TextView unreadLabel;
 	// 未读通讯录textview
 	private TextView unreadAddressLable;
+	private TextView[] mTabs_text;
     
 	private ImageView[] mTabs;
-	//private MyContactlistFragment contactListFragment;
-//	private	MainFragment MainFragment ;
 	private InputMethodManager inputMethodManager;
-	// private ChatHistoryFragment chatHistoryFragment;
-//	private ChatAllHistoryFragment chatHistoryFragment;
-	//private SettingsFragment settingFragment;
 	private Fragment[] fragments;
 	private int index;
 	private RelativeLayout[] tab_containers;
-	// 当前fragment的index
 	private int currentTabIndex;
-	// 账号在别处登录
 	public boolean isConflict = false;
 	
 	private Conversation_msgDao conversation_msgDao;
@@ -133,12 +127,18 @@ public class MainActivity extends BaseIActivity {
 //		unreadLabel = (TextView) findViewById(R.id.unread_msg_number);
 	//	unreadAddressLable = (TextView) findViewById(R.id.unread_address_number);
 		mTabs = new ImageView[4];
-		mTabs[0] = (ImageView) findViewById(R.id.btn_address_list);
+		mTabs_text = new TextView[4];
+		mTabs[0] = (ImageView) findViewById(R.id.btn_contact_list);
 		mTabs[1] = (ImageView) findViewById(R.id.btn_invite);
 		mTabs[2] = (ImageView) findViewById(R.id.btn_discover_list);
 		mTabs[3] = (ImageView) findViewById(R.id.btn_setting);
+		mTabs_text[0] = (TextView) findViewById(R.id.btn_text_contact);
+		mTabs_text[1] = (TextView) findViewById(R.id.btn_text_invite);
+		mTabs_text[2] = (TextView) findViewById(R.id.btn_text_discover);
+		mTabs_text[3] = (TextView) findViewById(R.id.btn_text_setting);
 		// 把第一个tab设为选中状态
 		mTabs[0].setSelected(true);
+		mTabs_text[0].setSelected(true);
 
 	}
 
@@ -149,7 +149,7 @@ public class MainActivity extends BaseIActivity {
 	 */
 	public void onTabClicked(View view) {
 		switch (view.getId()) {
-		case R.id.btn_address_list:
+		case R.id.btn_contact_list:
 			index = 0;
 			break;
 		case R.id.btn_invite:
@@ -172,8 +172,10 @@ public class MainActivity extends BaseIActivity {
 		}
 		*/
 		mTabs[currentTabIndex].setSelected(false);
+		mTabs_text[currentTabIndex].setSelected(false);
 		// 把当前tab设为选中状态
 		mTabs[index].setSelected(true);
+		mTabs_text[index].setSelected(true);
 		currentTabIndex = index;
 	}
 

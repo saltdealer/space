@@ -26,46 +26,17 @@
             	android:layout_height="wrap_content"
 		     >
 		     <ImageView
-                android:id="@+id/btn_address_list"
+                android:id="@+id/btn_contact_list"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:onClick="onTabClicked"
                 android:src="@drawable/tab_contact_list_bg" />
 		     </RelativeLayout>
             <TextView
+                android:id="@+id/btn_text_contact"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="通讯录"
-                android:layout_weight="1" 
-                android:textColor="@color/main_botton_text_color"
-                android:textSize="13dp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/btn_container_address_list"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="1" 
-            android:gravity="center_vertical|center_horizontal"
-            android:orientation="vertical">
-
-             <RelativeLayout
-            	android:layout_width="wrap_content"
-            	android:layout_height="wrap_content"
-		     >
-            
-            <ImageView
-                android:id="@+id/btn_discover_list"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:onClick="onTabClicked"
-                android:src="@drawable/tab_discover_bg" />
-            </RelativeLayout>
-            
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="发现"
                 android:layout_weight="1" 
                 android:textColor="@color/main_botton_text_color"
                 android:textSize="13dp" />
@@ -94,6 +65,7 @@
             </RelativeLayout>
             
             <TextView
+                android:id="@+id/btn_text_invite"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="美食邀请"
@@ -104,6 +76,36 @@
               
             
        	 </LinearLayout>
+
+          <LinearLayout
+              android:id="@+id/btn_container_address_list"
+              android:layout_width="wrap_content"
+              android:layout_height="match_parent"
+              android:layout_weight="1"
+              android:gravity="center_vertical|center_horizontal"
+              android:orientation="vertical" >
+
+              <RelativeLayout
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content" >
+
+                  <ImageView
+                      android:id="@+id/btn_discover_list"
+                      android:layout_width="40dp"
+                      android:layout_height="40dp"
+                      android:onClick="onTabClicked"
+                      android:src="@drawable/tab_discover_bg" />
+              </RelativeLayout>
+
+              <TextView
+                  android:id="@+id/btn_text_discover"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_weight="1"
+                  android:text="发现"
+                  android:textColor="@color/main_botton_text_color"
+                  android:textSize="13dp" />
+          </LinearLayout>
        	 
         <LinearLayout
             android:id="@+id/btn_container_setting"
@@ -127,6 +129,7 @@
             </RelativeLayout>
             
             <TextView
+                android:id="@+id/btn_text_setting"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="我"
