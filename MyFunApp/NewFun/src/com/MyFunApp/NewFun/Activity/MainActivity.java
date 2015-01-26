@@ -39,6 +39,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -59,7 +60,7 @@ public class MainActivity extends BaseIActivity {
 	// 未读通讯录textview
 	private TextView unreadAddressLable;
     
-	private Button[] mTabs;
+	private ImageView[] mTabs;
 	//private MyContactlistFragment contactListFragment;
 //	private	MainFragment MainFragment ;
 	private InputMethodManager inputMethodManager;
@@ -100,14 +101,6 @@ public class MainActivity extends BaseIActivity {
 		setContentView(R.layout.activity_main);
 		initViews();
 		
-		DevOpenHelper helper = DbOpenHelper.getdb_instance(this, null);
-		db = helper.getWritableDatabase();
-		daoMaster = new DaoMaster(db);
-	    daoSession = daoMaster.newSession();
-	    conversation_tribeDao = daoSession.getConversation_tribeDao();
-	    conversation_msgDao = daoSession.getConversation_msgDao();
-	    
-		
 		//MobclickAgent.setDebugMode( true );
 		//MobclickAgent.updateOnlineConfig(this);
 		
@@ -139,11 +132,11 @@ public class MainActivity extends BaseIActivity {
 		//
 //		unreadLabel = (TextView) findViewById(R.id.unread_msg_number);
 	//	unreadAddressLable = (TextView) findViewById(R.id.unread_address_number);
-		mTabs = new Button[4];
-		mTabs[0] = (Button) findViewById(R.id.btn_address_list);
-		mTabs[1] = (Button) findViewById(R.id.btn_discover_list);
-		mTabs[2] = (Button) findViewById(R.id.btn_invite);
-		mTabs[3] = (Button) findViewById(R.id.btn_setting);
+		mTabs = new ImageView[4];
+		mTabs[0] = (ImageView) findViewById(R.id.btn_address_list);
+		mTabs[1] = (ImageView) findViewById(R.id.btn_invite);
+		mTabs[2] = (ImageView) findViewById(R.id.btn_discover_list);
+		mTabs[3] = (ImageView) findViewById(R.id.btn_setting);
 		// 把第一个tab设为选中状态
 		mTabs[0].setSelected(true);
 
@@ -159,10 +152,10 @@ public class MainActivity extends BaseIActivity {
 		case R.id.btn_address_list:
 			index = 0;
 			break;
-		case R.id.btn_discover_list:
+		case R.id.btn_invite:
 			index = 1;
 			break;
-		case R.id.btn_invite:
+		case R.id.btn_discover_list:
 			index = 2;
 			break;
 		case R.id.btn_setting:

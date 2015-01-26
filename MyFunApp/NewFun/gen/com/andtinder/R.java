@@ -34,14 +34,14 @@ public final class R {
 	}
 	public static final class id {
 		public static final int disordered = 0x7f050001;
-		public static final int frame_bottom = 0x7f050095;
-		public static final int global_container = 0x7f050094;
+		public static final int frame_bottom = 0x7f050093;
+		public static final int global_container = 0x7f050092;
 		public static final int image = 0x7f05002d;
-		public static final int image_star = 0x7f050098;
-		public static final int name = 0x7f050096;
+		public static final int image_star = 0x7f050096;
+		public static final int name = 0x7f050094;
 		public static final int ordered = 0x7f050000;
-		public static final int rank = 0x7f050099;
-		public static final int time = 0x7f050097;
+		public static final int rank = 0x7f050097;
+		public static final int time = 0x7f050095;
 	}
 	public static final class layout {
 		public static final int std_card_inner = 0x7f030021;

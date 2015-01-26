@@ -45,7 +45,7 @@
                 android:layout_width="fill_parent" 
                 android:layout_height="fill_parent" 
                 android:hint="@string/reg_verify_code" 
-                android:inputType="textPassword" 
+                android:inputType="number" 
                 style="@style/input_edittext" />
             <View
 			    android:layout_width="fill_parent"

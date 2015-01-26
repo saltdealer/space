@@ -40,16 +40,21 @@ public class UpdateUserTask extends AsyncTask<String, Integer, Integer> {
 	private String account, nickname,female,image;
 	private HashMap<String, String> re_map;
 	private String token;
-	
+	private Intent intent_next;
+	private Context context;
+
 	//private IUser user;
 	
-	public UpdateUserTask(IActivitySupport activitySupport, String account, String nickname,String female,String image) {
+	public UpdateUserTask(IActivitySupport activitySupport, String account, String nickname,String female,String image,Intent intent_next) {
 		this.nickname = nickname;
 		this.female = female;
 		this.image = image;
 		this.account = account;
-		this.token = share_preferences.get_value(activitySupport.getContext(), "userinfo", "token");
 		this.activitySupport = activitySupport;
+		this.context = activitySupport.getContext();
+		this.token = share_preferences.get_value(activitySupport.getContext(), "userinfo", "token");
+		this.intent_next = intent_next;
+		
 	}
 
 	@Override
@@ -74,6 +79,8 @@ public class UpdateUserTask extends AsyncTask<String, Integer, Integer> {
 		case SUCC:
 			activitySupport.dismissLoadingDialog();
 			activitySupport.showCustomToast("注册成功");
+			context.startActivity(intent_next);
+			activitySupport.finish_activity();
 			break;
 		case UP_FAILE:
 			activitySupport.dismissLoadingDialog();
@@ -87,7 +94,7 @@ public class UpdateUserTask extends AsyncTask<String, Integer, Integer> {
 			//pd.dismiss();
 			activitySupport.dismissLoadingDialog();
 			if(re_map == null){
-				activitySupport.showCustomToast("登录失败");
+				activitySupport.showCustomToast("注册失败");
 			}else{
 				activitySupport.showCustomToast(re_map.get("message"));
 			}

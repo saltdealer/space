@@ -23,7 +23,6 @@ import com.MyFunApp.NewFun.View.WheelView;
 import com.MyFunApp.NewFun.task.UpdateUserTask;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -547,7 +546,8 @@ public class RegInfoActivity extends BaseIActivity implements android.view.View.
 		share_preferences.set_value(this, "user_info", "city", location);
 		share_preferences.set_value(this, "user_info", "taste", tasteString);
 		share_preferences.set_value(this, "user_info", "cook", cookString);
-		UpdateUserTask updateusertask = new UpdateUserTask(RegInfoActivity.this,account,nicknameString, genderString,  local_image_path);
+		Intent intent_next = new Intent(RegInfoActivity.this, MainActivity.class);
+		UpdateUserTask updateusertask = new UpdateUserTask(RegInfoActivity.this,account,nicknameString, genderString,  local_image_path,intent_next);
 		putAsyncTask_sii(updateusertask);
 /*
 		putAsyncTask(new AsyncTask<Void, Void, Integer>() {

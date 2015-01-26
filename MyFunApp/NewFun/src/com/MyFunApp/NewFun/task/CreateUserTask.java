@@ -12,6 +12,7 @@ import java.util.Map;
 import com.MyFunApp.NewFun.IActivitySupport;
 import com.MyFunApp.NewFun.Activity.Login_Activity;
 import com.MyFunApp.NewFun.Net.CONS;
+import com.MyFunApp.NewFun.Util.StaticF;
 import com.MyFunApp.NewFun.Util.share_preferences;
 
 import de.greenrobot.daoMyFun.DaoMaster;
@@ -79,6 +80,7 @@ public class CreateUserTask extends AsyncTask<String, Integer, Integer> {
 			share_preferences.set_value(activitySupport.getContext(), "userinfo", "token", tokenstring);
 			share_preferences.set_value(activitySupport.getContext(), "userinfo", "phone", account);
 			context.startActivity(intent_next);
+			activitySupport.finish_activity();
 			break;
 		case FAIL:
 			activitySupport.dismissLoadingDialog();
@@ -96,7 +98,8 @@ public class CreateUserTask extends AsyncTask<String, Integer, Integer> {
 
 	// ��¼
 	private Integer create() {
-		re_map = CONS.create_user(account, passwd, code);
+		String md5passwdString = StaticF.stringToMD5(passwd);
+		re_map = CONS.create_user(account, md5passwdString, code);
 		if(re_map == null)
 		{
 			return FAIL;

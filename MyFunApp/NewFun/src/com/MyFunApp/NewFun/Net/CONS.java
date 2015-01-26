@@ -8,13 +8,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.logging.LoggingMXBean;
 import java.util.Set;
 
 import org.json.JSONException;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 
-import com.MyFunApp.NewFun.db.IUser;
 import com.baidu.location.e;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
@@ -31,7 +32,7 @@ import com.squareup.okhttp.Response;
 public class CONS {
 	private static OkHttpClient client = null;
 	
-	public static final String BASE_URL = "http://192.168.1.106:9001";
+	public static final String BASE_URL = "http://172.21.253.40:9001";
 	public static String token;
 	public static String SESSIONID;
 	
@@ -212,23 +213,28 @@ public class CONS {
 	}
 
 	// 对应/user/login
-	public static IUser login(String phone_num, String password) {
-		IUser user = null;
+	public static HashMap<String, String> login(String phone_num, String password) {
+		HashMap<String, String> map = null;
 		OkHttpClient client = getInstance();
 		RequestBody formBody = new FormEncodingBuilder()
-				.add("phone_num", phone_num).add("passwd", password).build();
-		Request request = new Request.Builder().url(BASE_URL + "/user/login")
+				.add("phone", phone_num).add("password", password).build();
+		Request request = new Request.Builder().url(BASE_URL + "/myfun/api/user_login")
 				.post(formBody).build();
 		Response response;
 		Gson gson = new Gson();
 		try {
 			response = client.newCall(request).execute();
-			user = gson.fromJson(response.body().string(), IUser.class);
-			CONS.token = user.getToken();
+			String re = response.body()
+						.string();
+			Log.i("re   re ", re);
+			map = gson.fromJson(re, new TypeToken<HashMap<String, String>>() {
+			}.getType());
+			CONS.token = map.get("token");
+			return map;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return user;
+		return map;
 	}
 
 

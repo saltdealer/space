@@ -4,6 +4,7 @@ package com.MyFunApp.NewFun;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.view.View;
 
 public interface IActivitySupport {
 	/**
@@ -59,4 +60,5 @@ public interface IActivitySupport {
 	
 	public void showLoadingDialog(String text) ;
 	public void dismissLoadingDialog();
+	public void finish_activity();
 }

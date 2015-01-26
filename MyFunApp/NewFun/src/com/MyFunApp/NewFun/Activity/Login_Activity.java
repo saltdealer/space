@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import com.MyFunApp.NewFun.BaseIActivity;
 import com.MyFunApp.NewFun.R;
+import com.MyFunApp.NewFun.task.LoginTask;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -116,9 +117,9 @@ public class Login_Activity extends BaseIActivity implements OnClickListener {
 			
 			return ;
 		}
-//		LoginTask loginTask = new LoginTask(Login_Activity.this,
-	//			accountString,passwdString);
-		
-//		putAsyncTask_sii(loginTask);
+	Intent intent_next = new Intent(Login_Activity.this, MainActivity.class);
+	LoginTask loginTask = new LoginTask(Login_Activity.this,
+				accountString,passwdString,intent_next);
+	putAsyncTask_sii(loginTask);
 	}
 }
