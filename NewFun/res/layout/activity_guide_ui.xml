@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res/android" xmlns:app1="http://schemas.android.com/apk/res/com.MyFun.MissFun">
+
+  <LinearLayout
+      android:id="@+id/splash_pager"
+      android:layout_width="fill_parent"
+      android:layout_height="340dp"
+      app:layout_weight="10"
+      android:orientation="vertical" >
+       <android.support.v4.view.ViewPager
+        android:id="@+id/guid_pager"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        />
+      <com.viewpagerindicator.UnderlinePageIndicator
+          android:id="@+id/guid_indicator"
+          android:layout_width="fill_parent"
+          android:layout_height="2dp"
+          android:background="#736e6d"
+           />
+  </LinearLayout>
+     <LinearLayout
+         android:id="@+id/splash_login_frame"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         app:layout_gravity="center_horizontal"
+         app:layout_weight="1"
+         android:orientation="horizontal"
+         android:layout_marginTop="14dp"
+         android:layout_marginBottom="10dp" >
+
+         <TextView android:textSize="16sp"
+              android:textStyle="bold"
+              android:textColor="#fe466d" 
+              android:gravity="center" 
+              android:id="@+id/splash_login" 
+              android:background="@drawable/bg_btn_login"
+              android:layout_width="121.5dp" 
+              android:layout_height="37.5dp" 
+              android:text="@string/login_me"/>
+         <TextView
+             android:id="@+id/splash_register"
+             android:layout_width="121.5dp"
+             android:layout_height="37.5dp"
+             app:layout_marginLeft="20dp"
+             android:background="@drawable/bg_btn_login"
+             android:gravity="center"
+             android:text="@string/register_me"
+             android:textColor="#fe466d"
+             android:textSize="16sp"
+             android:textStyle="bold" />
+     </LinearLayout>
+	  <LinearLayout
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         app:layout_gravity="center_horizontal"
+         app:layout_weight="1"
+         android:orientation="horizontal" >
+        <View
+		    android:layout_width="90dp"
+		    android:layout_height="1.0px"
+		    android:layout_marginBottom="6dp"
+		    android:layout_marginTop="6dp"
+		    android:background="#c7c7c7" />
+	
+         <TextView
+		    android:id="@+id/splash_text"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    app:layout_gravity="center_horizontal"
+		    android:gravity="center"
+		    android:layout_marginLeft="20dp"
+		    android:text="@string/login_press"
+		    android:textColor="#666666"
+		    android:textSize="12sp" />
+         
+       	<View
+		    android:layout_width="90dp"
+		    android:layout_height="1.0px"
+		    android:layout_marginBottom="6dp"
+		    android:layout_marginLeft="20dp"
+		    android:layout_marginTop="6dp" 
+		    android:background="#c7c7c7" />
+	         
+    </LinearLayout>
+    
+	<LinearLayout
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         app:layout_gravity="center_horizontal"
+         app:layout_weight="1" 
+         android:paddingBottom="15dp" >
+
+     <ImageView
+         android:id="@+id/login_logo_icon_qq"
+         android:layout_width="wrap_content"
+         app:layout_height="wrap_content"
+         android:contentDescription="@string/login"
+         android:src="@drawable/btn_login_qq" />
+      <ImageView
+         android:id="@+id/login_logo_icon_weixin"
+         android:layout_width="wrap_content"
+          android:layout_marginLeft="20dp"
+         app:layout_height="wrap_content"
+         android:contentDescription="@string/login"
+         android:src="@drawable/btn_login_wechat"/>
+     <ImageView
+         android:id="@+id/login_logo_icon_weibo"
+         android:layout_width="wrap_content"
+          android:layout_marginLeft="20dp"
+         app:layout_height="wrap_content"
+         android:src="@drawable/btn_login_microblog"
+        />
+
+     </LinearLayout>
+	
+</LinearLayout>

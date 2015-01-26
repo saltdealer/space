@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tags="http://schemas.android.com/apk/com.wscnydx"
+  xmlns:app="http://schemas.android.com/apk/com.wscnydx">
+    <include android:id="@+id/app_title_layout" layout="@layout/title_app"  />
+    <RelativeLayout android:gravity="center" android:orientation="vertical" android:id="@+id/reg_info_avatar_linear" android:layout_width="136.0dip" android:layout_height="136.0dip" android:layout_below="@+id/app_title_layout" android:layout_centerHorizontal="true">
+        <de.hdodenhof.circleimageview.CircleImageView 
+            android:layout_gravity="center" 
+            android:id="@+id/reg_info_avatar" 
+            android:layout_width="133.0dip" 
+            android:layout_height="133.0dip" 
+            android:src="@drawable/icon_header" 
+            android:layout_centerInParent="true" />
+        <ImageView android:layout_gravity="center" android:id="@+id/reg_info_avatar_bg" android:background="@drawable/icon_header_shade_red" android:layout_width="136.0dip" android:layout_height="136.0dip" android:layout_centerInParent="true" />
+    </RelativeLayout>
+   
+    <LinearLayout android:orientation="vertical" android:background="@drawable/reg_info_bg" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="8.0dip" android:layout_above="@+id/reg_info_finish" android:layout_below="@+id/reg_info_avatar_linear">
+  
+              
+    <LinearLayout android:id="@+id/linearlayout" 
+        android:paddingLeft="16.5dip" 
+        android:paddingRight="16.5dip" 
+        android:layout_width="fill_parent" 
+        android:layout_height="wrap_content" 
+         android:layout_marginTop="6.0dip"
+        style="@style/login_input_linear_child">
+        <TextView android:textSize="15sp" android:textColor="#666666" 
+                android:id="@+id/textview5" 
+                android:layout_width="wrap_content" android:layout_height="wrap_content" 
+                android:text="@string/reg_name" 
+                android:layout_centerVertical="true" />
+        <com.MyFunApp.NewFun.Util.ClearEditText 
+            android:id="@+id/reg_name_input"
+            android:layout_marginLeft="25dp" 
+            android:layout_width="fill_parent" 
+            android:layout_height="wrap_content" 
+            android:hint="@string/reg_name" 
+            style="@style/input_edittext" />
+    </LinearLayout>
+    <View android:background="#c7c7c7" android:layout_marginLeft="16.5dip" android:layout_marginRight="16.5dip"  android:layout_width="fill_parent" android:layout_height="1.0px" android:layout_marginTop="6.0dip" android:layout_marginBottom="6.0dip" />
+    
+    
+        <LinearLayout android:gravity="center_vertical" 
+            android:orientation="horizontal" 
+            android:paddingLeft="16.5dip" 
+            android:paddingRight="16.5dip" 
+            android:layout_width="fill_parent" 
+            android:layout_height="wrap_content" 
+            android:layout_marginTop="6.0dip">
+            <TextView android:textSize="13.829987sp" 
+                android:textColor="#666666" 
+                android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/reg_info_sex" />
+            <RadioGroup android:orientation="horizontal" android:id="@+id/reg_info_radio_group" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginLeft="30.0dip">
+                <RadioButton 
+                    android:gravity="center" 
+                    android:id="@+id/reg_info_boy_radio" 
+                    android:background="@drawable/btn_sex" 
+                    android:layout_width="28dp" 
+                    android:layout_height="28dp" 
+                    android:layout_marginRight="10.0dip" 
+                    android:button="@null" 
+                   />
+                 <TextView android:textSize="15sp" android:textColor="#666666" 
+	                android:layout_width="wrap_content" android:layout_height="wrap_content" 
+	                android:text="@string/boy" 
+	                 />
+                <RadioButton 
+                    android:gravity="center" 
+                    android:id="@+id/reg_info_girl_radio" 
+                    android:layout_marginLeft="70dp"
+                    android:background="@drawable/btn_sex" 
+                    android:layout_width="28dp" 
+                    android:layout_height="28dp" 
+                    android:checked="true" 
+                    android:button="@null" 
+                   />
+                 <TextView android:textSize="15sp" android:textColor="#666666" 
+                     android:layout_marginLeft="5dp"
+	                android:layout_width="wrap_content" android:layout_height="wrap_content" 
+	                android:text="@string/girl" 
+	                 />
+            </RadioGroup>
+        </LinearLayout>
+        
+        
+          <View android:background="#c7c7c7" android:layout_marginLeft="16.5dip" android:layout_marginRight="16.5dip"  android:layout_width="fill_parent" android:layout_height="1.0px" android:layout_marginTop="6.0dip" android:layout_marginBottom="6.0dip" />
+        <RelativeLayout android:gravity="center_vertical" android:orientation="horizontal" android:paddingLeft="16.5dip" android:paddingRight="16.5dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <TextView android:textSize="15sp" android:textColor="#666666" 
+                android:id="@+id/textview0" 
+                android:layout_width="wrap_content" android:layout_height="wrap_content" 
+                android:text="@string/age" 
+                android:layout_centerVertical="true" />
+
+            <TextView
+                android:id="@+id/reg_info_label_age"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/textview0"
+                android:layout_marginLeft="25dp"
+                android:layout_toRightOf="@+id/textview0"
+                android:gravity="center"
+                android:text="@string/unselected"
+                android:textColor="#d5d5d5"
+                android:textSize="15sp" />
+
+            <TextView android:textSize="13.829987sp" 
+                android:gravity="center" 
+                android:id="@+id/reg_info_age_selector" 
+                android:background="@drawable/btn_reg_chose" 
+                android:paddingLeft="16.5dip" 
+                android:paddingRight="16.5dip" 
+                android:layout_width="wrap_content" 
+                android:layout_height="wrap_content" 
+                android:layout_alignParentRight="true" 
+                android:layout_centerVertical="true" />
+        </RelativeLayout>
+        
+        
+        
+        <View android:background="#c7c7c7" android:layout_marginLeft="16.5dip" android:layout_marginRight="16.5dip"  android:layout_width="fill_parent" android:layout_height="1.0px" android:layout_marginTop="6.0dip" android:layout_marginBottom="6.0dip" />
+        <RelativeLayout android:gravity="center_vertical" android:orientation="horizontal" android:paddingLeft="16.5dip" android:paddingRight="16.5dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <TextView android:textSize="15sp" android:textColor="#666666" 
+                android:id="@+id/textview1" 
+                android:layout_width="wrap_content" android:layout_height="wrap_content" 
+                android:text="菜系" 
+                android:layout_centerVertical="true" />
+
+            <TextView
+                android:id="@+id/reg_info_label_cook"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/textview1"
+                android:layout_marginLeft="25dp"
+                android:layout_toRightOf="@+id/textview1"
+                android:gravity="center"
+                android:text="@string/unselected"
+                android:textColor="#d5d5d5"
+                android:textSize="15sp" />
+
+            <TextView android:textSize="13.829987sp" 
+                android:textColor="@color/black" 
+                android:gravity="center" 
+                android:id="@+id/reg_info_cook_selector" 
+                android:background="@drawable/btn_reg_chose" 
+                android:paddingLeft="16.5dip" 
+                android:paddingRight="16.5dip" 
+                android:layout_width="wrap_content" 
+                android:layout_height="wrap_content" 
+                android:layout_alignParentRight="true" 
+                android:layout_centerVertical="true" />
+        </RelativeLayout>
+        
+        <View android:background="#c7c7c7" android:layout_marginLeft="16.5dip" android:layout_marginRight="16.5dip"  android:layout_width="fill_parent" android:layout_height="1.0px" android:layout_marginTop="6.0dip" android:layout_marginBottom="6.0dip" />
+        <RelativeLayout android:gravity="center_vertical" android:orientation="horizontal" android:paddingLeft="16.5dip" android:paddingRight="16.5dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <TextView android:textSize="15sp" android:textColor="#666666" android:id="@+id/textview4" 
+                android:layout_width="wrap_content" android:layout_height="wrap_content" 
+                android:text="口味" android:layout_centerVertical="true" />
+            <TextView 
+                 android:layout_marginLeft="25dp"
+                 android:gravity="center" 
+                 android:id="@+id/reg_info_label_taste" 
+                 android:layout_width="wrap_content" 
+                 android:layout_height="wrap_content" 
+                 android:text="@string/unselected" 
+                 android:textColor="#d5d5d5"
+               	 android:textSize="15sp"
+                 android:layout_toRightOf="@+id/textview4" 
+                 android:layout_centerVertical="true" />
+            <TextView android:textSize="13.829987sp" 
+                android:textColor="@color/black" 
+                android:gravity="center" 
+                android:id="@+id/reg_info_taste_selector" 
+                android:background="@drawable/btn_reg_chose" 
+                android:paddingLeft="16.5dip" 
+                android:paddingRight="16.5dip" 
+                android:layout_width="wrap_content" 
+                android:layout_height="wrap_content" 
+                android:layout_alignParentRight="true" 
+                android:layout_centerVertical="true" />
+        </RelativeLayout>
+        <View android:background="#c7c7c7" android:layout_marginLeft="16.5dip" android:layout_marginRight="16.5dip"  android:layout_width="fill_parent" android:layout_height="1.0px" android:layout_marginTop="6.0dip" android:layout_marginBottom="6.0dip" />
+        <RelativeLayout android:gravity="center_vertical" android:orientation="horizontal" android:paddingLeft="16.5dip" android:paddingRight="16.5dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <TextView android:textSize="15sp" 
+                android:textColor="#666666" 
+                android:id="@+id/textview2" 
+                android:layout_width="wrap_content" 
+                android:layout_height="wrap_content" 
+                android:text="位置" 
+                android:layout_centerVertical="true" />
+            <TextView
+                android:layout_marginLeft="25dp"
+                android:textColor="#d5d5d5"
+                android:textSize="15sp"
+                android:gravity="center" 
+                android:id="@+id/reg_info_label_location"
+                android:layout_width="wrap_content" 
+                android:layout_height="wrap_content" 
+                android:text="@string/unselected" android:layout_toRightOf="@+id/textview2" android:layout_centerVertical="true" />
+            <TextView android:textSize="13.829987sp" 
+                android:gravity="center" 
+                android:id="@+id/reg_info_location_selector"
+                android:background="@drawable/btn_reg_chose"
+                android:paddingLeft="16.5dip" 
+                android:paddingRight="16.5dip" 
+                android:layout_width="wrap_content" 
+                android:layout_height="wrap_content" 
+                android:layout_alignParentRight="true" 
+                android:layout_centerVertical="true" />
+        </RelativeLayout>
+        <View android:background="#c7c7c7" android:layout_marginLeft="16.5dip" android:layout_marginRight="16.5dip"  android:layout_width="fill_parent" android:layout_height="1.0px" android:layout_marginTop="6.0dip" android:layout_marginBottom="6.0dip" />
+        
+        <ScrollView android:paddingTop="8.0dip" android:paddingBottom="8.0dip" android:scrollbars="none" android:fadingEdge="none" android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <RelativeLayout android:orientation="vertical" android:id="@+id/reg_info_label_linear" android:paddingLeft="16.5dip" android:paddingRight="16.5dip" android:visibility="visible" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_marginTop="10.0dip">
+            </RelativeLayout>
+        </ScrollView>
+    </LinearLayout>
+    <ViewStub android:id="@+id/reg_info_stub" android:layout_width="fill_parent" android:layout_height="fill_parent" android:layout_alignParentBottom="true" />
+    <ViewStub android:id="@+id/reg_info_timer_stub" android:layout_width="fill_parent" android:layout_height="fill_parent" android:layout_alignParentBottom="true" />
+    
+    <TextView android:textSize="16.0sp" 
+        android:id="@+id/reg_info_finish"
+        android:gravity="center" 
+        android:textColor="@color/white" 
+        android:layout_width="135dp"
+        android:layout_height="41dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/btn_login_btn"
+        android:text="@string/finish" />
+
+</RelativeLayout>

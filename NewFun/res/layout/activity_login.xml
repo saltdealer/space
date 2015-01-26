@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout android:orientation="vertical" android:background="#f9f9f9" android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+  <include android:id="@+id/app_title_layout" layout="@layout/title_app" />
+    
+    <LinearLayout android:id="@+id/login_input_linear" 
+        android:layout_marginTop="65.0dp" 
+        android:layout_below="@+id/app_title_layout"
+        style="@style/login_input_linear">
+        <RelativeLayout android:orientation="horizontal" 
+            style="@style/login_input_linear_child">
+            <com.MyFunApp.NewFun.Util.ClearEditText android:id="@+id/login_account_et" 
+                android:layout_width="fill_parent" 
+                android:layout_height="fill_parent" 
+                android:hint="@string/login_account_hint" 
+                android:digits="1234567890.@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" 
+                android:inputType="phone" 
+                style="@style/input_edittext" />
+            	<View
+				    android:layout_width="fill_parent"
+				    android:layout_height="1.0px"
+				    android:layout_alignParentBottom="true"
+			    	android:background="#c7c7c7" />
+        </RelativeLayout>
+      		  
+        <RelativeLayout android:orientation="horizontal" 
+            android:layout_marginTop="32.5dip" 
+            style="@style/login_input_linear_child">
+            <com.MyFunApp.NewFun.Util.ClearEditText android:id="@+id/login_pwd_et" 
+                android:layout_width="fill_parent" 
+                android:layout_height="fill_parent" 
+                android:hint="@string/login_pwd_hint" 
+                android:inputType="textPassword" 
+                style="@style/input_edittext" />
+            <View
+				    android:layout_width="fill_parent"
+				    android:layout_height="1.0px"
+				    android:layout_alignParentBottom="true"
+			    	android:background="#c7c7c7" />
+        </RelativeLayout>
+    </LinearLayout>
+    <LinearLayout android:orientation="horizontal"
+         android:id="@+id/logonOrRegister" 
+         android:layout_width="wrap_content" 
+         android:layout_height="wrap_content" 
+         android:layout_marginTop="40.0dip" 
+         android:layout_below="@+id/login_input_linear" 
+         android:layout_centerHorizontal="true">
+
+        <TextView
+            android:id="@+id/login_login_btn"
+            android:layout_width="174dp"
+            android:layout_height="36dp"
+            android:background="@drawable/btn_login_btn" 
+            android:gravity="center"
+            android:text="@string/login_btn"
+            android:textColor="@color/white"
+            android:textSize="19.169983sp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/RegisterOrforget"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="30dp"
+        android:layout_centerHorizontal="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal" >
+        <TextView android:textSize="15.0sp" android:textColor="#ff325e" 
+            android:gravity="center" 
+            android:id="@+id/login_register_btn" 
+            android:background="@drawable/btn_register_bg" 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" 
+            android:text="@string/register_me" />
+        
+        <View
+	    android:layout_width="1.0px"
+	    android:layout_height="20dp"
+	    android:background="#c7c7c7" />
+        <TextView android:textSize="15.0sp" 
+            android:textColor="#ff325e" 
+            android:gravity="center" 
+            android:id="@+id/login_login_forget" 
+            android:background="@drawable/btn_register_bg" 
+            android:layout_width="wrap_content" 
+            android:layout_height="wrap_content" 
+            android:text="@string/login_forgot" />
+    </LinearLayout>
+     
+</RelativeLayout>
+

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_window_focused="false" android:drawable="@drawable/send_verify_10" />
+    <item android:state_pressed="true" android:drawable="@drawable/send_verify_pressed_10" />
+    <item android:state_enabled="false" android:drawable="@drawable/send_verify_pressed_10" />
+    <item android:drawable="@drawable/send_verify_10" />
+</selector>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@+id/app_title_rela" 
+    android:background="@drawable/new_bar" 
+    android:layout_width="fill_parent" 
+    android:layout_height="40.0dip"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <View android:id="@+id/app_title_bg" 
+        android:visibility="gone" 
+        android:layout_width="fill_parent" 
+        android:layout_height="fill_parent" />
+    
+    <ImageView android:id="@+id/app_back" 
+        android:layout_width="wrap_content" 
+        android:layout_height="36dp" 
+        android:layout_marginLeft="20.0dp" 
+        android:src="@drawable/back_icon" 
+        android:layout_centerVertical="true" />
+    <TextView android:textSize="20.5sp" 
+        android:textColor="@color/white" 
+        android:gravity="center" 
+        android:id="@+id/app_title_left" 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:layout_marginLeft="10.0dip" 
+        android:singleLine="true" 
+        android:layout_centerVertical="true" />
+    <com.MyFunApp.NewFun.Util.AlwaysMarqueeTextView android:textSize="20.5sp" 
+        android:textColor="@color/white" 
+        android:ellipsize="marquee" 
+        android:gravity="center" 
+        android:id="@+id/app_title" 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:layout_marginLeft="70.0dip" 
+        android:layout_marginRight="70.0dip" 
+        android:singleLine="true" 
+        android:layout_centerInParent="true" />
+    <ProgressBar android:id="@+id/loading" android:visibility="gone" android:layout_width="16.0dip" android:layout_height="16.0dip" android:layout_marginLeft="-65.0dip" android:indeterminate="true" android:indeterminateDrawable="@drawable/common_loading4" android:indeterminateBehavior="repeat" android:layout_toRightOf="@+id/app_title" android:layout_centerVertical="true" />
+    <TextView android:textColor="@color/white" android:gravity="center" android:id="@+id/app_btn_right" android:background="@drawable/btn_alpha" android:paddingTop="2.0dip" android:paddingBottom="3.0dip" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginRight="8.0dip" android:layout_alignParentRight="true" android:layout_centerVertical="true" />
+    <ImageView android:id="@+id/user_info_modify" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="12.0dip" android:layout_marginRight="10.0dip" android:src="@drawable/icon_note" android:layout_alignParentRight="true" android:layout_centerVertical="true" />
+    <ImageView android:id="@+id/detail_set" android:background="@drawable/more_icon" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20.0dip" android:layout_marginRight="10.0dip" android:layout_alignParentRight="true" android:layout_centerVertical="true" />
+    <ImageView android:id="@+id/more" android:paddingLeft="10.0dip" android:paddingRight="10.0dip" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginRight="10.0dip" android:layout_alignParentRight="true" android:layout_centerVertical="true" />
+    <ImageView android:id="@+id/icon" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginRight="10.0dip" android:layout_alignParentRight="true" android:layout_centerVertical="true" />
+</RelativeLayout>

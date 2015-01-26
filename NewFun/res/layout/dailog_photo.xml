@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="bottom" android:orientation="vertical" 
+    android:background="@drawable/nothing" android:layout_width="fill_parent" android:layout_height="fill_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:id="@+id/dialog_cancel_linear" android:layout_width="fill_parent" android:layout_height="0.0dip" android:layout_weight="1.0" />
+    <LinearLayout android:orientation="vertical" 
+        android:id="@+id/reg_info_photo_linear" 
+        android:background="@drawable/black_73" android:layout_width="fill_parent" android:layout_height="wrap_content">
+        <LinearLayout android:orientation="horizontal" android:paddingTop="30.0dip" android:paddingBottom="30.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content">
+            <LinearLayout android:gravity="center" android:orientation="vertical" android:id="@+id/only_girl" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_weight="1.0">
+                <ImageView android:id="@+id/dialog_camera" android:background="@drawable/icon_camera" style="@style/dialog_filter_iv_style" />
+                <TextView android:text="拍照" style="@style/dialog_filter_tv_style" />
+            </LinearLayout>
+            <LinearLayout android:gravity="center" android:orientation="vertical" android:id="@+id/only_boy" android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_weight="1.0">
+                <ImageView android:id="@+id/dialog_photo" android:src="@drawable/icon_photo" style="@style/dialog_filter_iv_style" />
+                <TextView android:text="选择" style="@style/dialog_filter_tv_style" />
+            </LinearLayout>
+        </LinearLayout>
+        <RelativeLayout  android:layout_width="fill_parent" android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/photo_cancel"
+                android:layout_width="128dp"
+                android:layout_height="40dp"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/btn_login_btn"
+                android:gravity="center"
+                android:paddingLeft="25.0dip"
+                android:paddingRight="25.0dip"
+                android:text="@string/cancel"
+                android:textColor="@color/white"
+                android:textSize="18.0sp"
+                android:textStyle="bold" />
+
+        </RelativeLayout>
+    </LinearLayout>
+</LinearLayout>

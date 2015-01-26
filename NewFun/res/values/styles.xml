@@ -1,0 +1,74 @@
+<resources>
+
+    <!--
+        Base application theme, dependent on API level. This theme is replaced
+        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+    -->
+    <style name="AppBaseTheme" parent="Theme.AppCompat.Light">
+        <!--
+            Theme customizations available in newer API levels can go in
+            res/values-vXX/styles.xml, while customizations related to
+            backward-compatibility can go here.
+        -->
+    </style>
+
+    <!-- Application theme. -->
+    <style name="AppTheme" parent="AppBaseTheme">
+        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+    </style>
+    
+    
+     <style name="loading_dialog" parent="@android:style/Theme.Dialog">
+        <item name="android:windowBackground">@color/progress_dialog_bg</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+    
+     
+	<style name="login_input_linear">
+        <item name="android:orientation">vertical</item>
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginLeft">15.0dip</item>
+        <item name="android:layout_marginRight">15.0dip</item>
+    </style>
+    <style name="login_input_linear_child">
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingLeft">16.5dip</item>
+        <item name="android:paddingRight">16.5dip</item>
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">36.159973dip</item>
+    </style>
+ 	<style name="input_edittext" parent="@android:style/Widget.EditText">
+        <item name="android:textSize">13.829987sp</item>
+        <item name="android:textColor">@color/login_account</item>
+        <item name="android:textColorHint">@color/login_account_hint</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:background">@null</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:drawableRight">@drawable/icon_clear</item>
+        <item name="android:textCursorDrawable">@null</item>
+    </style>
+    
+ 	
+ 	
+ 	<style name="dialog_filter_iv_style">
+        <item name="android:layout_gravity">center</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_centerHorizontal">true</item>
+        <item name="android:layout_centerVertical">true</item>
+    </style>
+
+    <style name="dialog_filter_tv_style">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">5.0dip</item>
+        <item name="android:layout_centerHorizontal">true</item>
+    </style>
+
+</resources>
