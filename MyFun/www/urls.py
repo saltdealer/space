@@ -55,79 +55,6 @@ def check_admin():
     if user and user.admin:
         return
     raise APIPermissionError('No permission.')
-
-@interceptor('/')
-def user_interceptor(next):
-    logging.info('try to bind user from session cookie...')
-    user = None
-    cookie = ctx.request.cookies.get(_COOKIE_NAME)
-    if cookie:
-        logging.info('parse session cookie...')
-        user = parse_signed_cookie(cookie)
-        if user:
-            logging.info('bind user <%s> to session...' % user.email)
-    ctx.request.user = user
-    return next()
-
-@interceptor('/manage/')
-def manage_interceptor(next):
-    user = ctx.request.user
-    if user and user.admin:
-        return next()
-    raise seeother('/signin')
-
-@view('test.html')
-@get('/test')
-def test():
-
-    return {'string':3} 
-
-@view('blogs.html')
-@get('/')
-def index():
-    blogs, page,cat = _get_blogs_by_page()
-    size = len(blogs)
-    return dict(page=page, blogs=blogs, user=ctx.request.user,size=size,cat=cat)
-
-@view('blog.html')
-@get('/blog/:blog_id')
-def blog(blog_id):
-    blog = Blog.get(blog_id)
-    if blog is None:
-        raise notfound()
-    blog.html_content = markdown2.markdown(blog.content)
-    comments = Comment.find_by('where blog_id=? order by created_at desc limit 1000', blog_id)
-    return dict(blog=blog, comments=comments, user=ctx.request.user)
-
-@view('signin.html')
-@get('/signin')
-def signin():
-    return dict()
-
-@get('/signout')
-def signout():
-    ctx.response.delete_cookie(_COOKIE_NAME)
-    raise seeother('/')
-
-@api
-@post('/api/authenticate')
-def authenticate():
-    i = ctx.request.input(remember='')
-    email = i.email.strip().lower()
-    password = i.password
-    remember = i.remember
-    user = User.find_first('where email=?', email)
-    if user is None:
-        raise APIError('auth:failed', 'email', 'Invalid email.')
-    elif user.password != password:
-        raise APIError('auth:failed', 'password', 'Invalid password.')
-    # make session cookie:
-    max_age = 604800 if remember=='true' else None
-    cookie = make_signed_cookie(user.id, user.password, max_age)
-    ctx.response.set_cookie(_COOKIE_NAME, cookie, max_age=max_age)
-    user.password = '******'
-    return user
-
 _RE_EMAIL = re.compile(r'^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$')
 _RE_MD5 = re.compile(r'^[0-9a-f]{32}$')
 _RE_PHONE = re.compile('^1[358][0-9]{9}$')	
@@ -159,6 +86,31 @@ def get_file():
     image.pop('image_path')
     image.errcode='0'
     return image
+@api
+@post('/myfun/api/user_login')
+def user_login():
+    logging.info('user start to login')
+    i = ctx.request.input(phone='',password='')
+    phone = i.phone.strip()
+    password = i.password.strip()
+    logging.info('the passwd is %s' % password)
+    if not phone or not _RE_PHONE.match(phone):
+        raise APIError('Value:illegal','phone','The string is not a phone num','-1')
+    if not password or not _RE_MD5.match(password):
+        logging.info('the passwd is not illegal')
+        raise APIError('Value:illegal','password','The password is not a md5string','-1')
+
+    user = User.find_first('where phone=?', phone)
+    image = Image.find_first('where id=?',user.image)
+    user.image = image.image_path
+    logging.info('the user is %s' % user.name)
+    if user.password == password:
+        user.errcode='0'
+        user.pop('password')
+        return user
+    else:
+        raise APIError('Authentication:fail','password','The password is not correct','-1')
+
 
 @interceptor('/myfun/api-token/')
 def user_interceptor(next):
@@ -299,168 +251,6 @@ def register_user():
     user.errcode='0'
     user['token'] = token
     return user
-
-@view('register.html')
-@get('/register')
-def register():
-    return dict()
-
-def _get_blogs_by_page():
-    cat = int(ctx.request.get('cat', '0'))
-    if cat!=0:
-        total = Blog.count_by('where category=?',cat)
-        page = Page(total, _get_page_index())
-        blogs = Blog.find_by('where category=? order by created_at desc limit ?,?',cat, page.offset, page.limit)
-    else:
-        total = Blog.count_all()
-        page = Page(total, _get_page_index())
-        blogs = Blog.find_by('order by created_at desc limit ?,?', page.offset, page.limit)
-
-    return blogs, page, cat
-
-@get('/manage/')
-def manage_index():
-    raise seeother('/manage/comments')
-
-@view('manage_comment_list.html')
-@get('/manage/comments')
-def manage_comments():
-    return dict(page_index=_get_page_index(), user=ctx.request.user)
-
-@view('manage_blog_list.html')
-@get('/manage/blogs')
-def manage_blogs():
-    return dict(page_index=_get_page_index(), user=ctx.request.user)
-
-@view('manage_links_list.html')
-@get('/manage/links')
-def manage_links():
-    return dict(page_index=_get_page_index(), user=ctx.request.user)
-
-@view('manage_blog_edit.html')
-@get('/manage/blogs/create')
-def manage_blogs_create():
-    return dict(id=None, action='/api/blogs', redirect='/manage/blogs', user=ctx.request.user)
-
-@view('manage_blog_edit.html')
-@get('/manage/blogs/edit/:blog_id')
-def manage_blogs_edit(blog_id):
-    blog = Blog.get(blog_id)
-    if blog is None:
-        raise notfound()
-    return dict(id=blog.id, name=blog.name, summary=blog.summary, content=blog.content, action='/api/blogs/%s' % blog_id, redirect='/manage/blogs', user=ctx.request.user)
-
-@view('manage_user_list.html')
-@get('/manage/users')
-def manage_users():
-    return dict(page_index=_get_page_index(), user=ctx.request.user)
-
-@api
-@get('/api/blogs')
-def api_get_blogs():
-    format = ctx.request.get('format', '')
-    blogs, page ,cat = _get_blogs_by_page()
-    if format=='html':
-        for blog in blogs:
-            blog.content = markdown2.markdown(blog.content)
-    return dict(blogs=blogs, page=page)
-
-@api
-@get('/api/blogs/:blog_id')
-def api_get_blog(blog_id):
-    blog = Blog.get(blog_id)
-    if blog:
-        return blog
-    raise APIResourceNotFoundError('Blog')
-
-@api
-@post('/api/blogs')
-def api_create_blog():
-    check_admin()
-    i = ctx.request.input(name='', summary='', content='',category='')
-    name = i.name.strip()
-    summary = i.summary.strip()
-    content = i.content.strip()
-    category = i.category.strip()
-    if not name:
-        raise APIValueError('name', 'name cannot be empty.')
-    if not summary:
-        raise APIValueError('summary', 'summary cannot be empty.')
-    if not content:
-        raise APIValueError('content', 'content cannot be empty.')
-    user = ctx.request.user
-    blog = Blog(user_id=user.id, user_name=user.name, name=name, summary=summary, content=content, user_image=user.image,category=category)
-    blog.insert()
-    return blog
-
-@api
-@post('/api/blogs/:blog_id')
-def api_update_blog(blog_id):
-    check_admin()
-    i = ctx.request.input(name='', summary='', content='',category='')
-    name = i.name.strip()
-    summary = i.summary.strip()
-    content = i.content.strip()
-    category = i.category.strip()
-    if not name:
-        raise APIValueError('name', 'name cannot be empty.')
-    if not summary:
-        raise APIValueError('summary', 'summary cannot be empty.')
-    if not content:
-        raise APIValueError('content', 'content cannot be empty.')
-    blog = Blog.get(blog_id)
-    if blog is None:
-        print 'sdfdsf'
-    blog.name = name
-    blog.summary = summary
-    blog.content = content
-    blog.category =category
-    blog.update()
-    return blog
-
-@api
-@post('/api/blogs/:blog_id/delete')
-def api_delete_blog(blog_id):
-    check_admin()
-    blog = Blog.get(blog_id)
-    if blog is None:
-        raise APIResourceNotFoundError('Blog')
-    blog.delete()
-    return dict(id=blog_id)
-
-@api
-@post('/api/blogs/:blog_id/comments')
-def api_create_blog_comment(blog_id):
-    user = ctx.request.user
-    if user is None:
-        raise APIPermissionError('Need signin.')
-    blog = Blog.get(blog_id)
-    if blog is None:
-        raise APIResourceNotFoundError('Blog')
-    content = ctx.request.input(content='').content.strip()
-    if not content:
-        raise APIValueError('content')
-    c = Comment(blog_id=blog_id, user_id=user.id, user_name=user.name, user_image=user.image, content=content)
-    c.insert()
-    return dict(comment=c)
-
-@api
-@post('/api/comments/:comment_id/delete')
-def api_delete_comment(comment_id):
-    check_admin()
-    comment = Comment.get(comment_id)
-    if comment is None:
-        raise APIResourceNotFoundError('Comment')
-    comment.delete()
-    return dict(id=comment_id)
-
-@api
-@get('/api/comments')
-def api_get_comments():
-    total = Comment.count_all()
-    page = Page(total, _get_page_index())
-    comments = Comment.find_by('order by created_at desc limit ?,?', page.offset, page.limit)
-    return dict(comments=comments, page=page)
 
 @api
 @get('/myfun/api/users')
