@@ -7,15 +7,17 @@ import os, re, time, base64, hashlib, logging
 
 import markdown2
 
-from transwarp.web import get, post, ctx, view, interceptor, seeother, notfound
+from transwarp.web import get, post, ctx, view, interceptor, seeother, notfound ,MultipartFile
 from transwarp.db import next_id
 
 from apis import api, Page, APIError, APIValueError, APIPermissionError, APIResourceNotFoundError, next_code
-from models import User ,Token,VerifyCode
+from models import User ,Token,VerifyCode,Image
 from config import configs
 
 _COOKIE_NAME = 'awesession'
 _COOKIE_KEY = configs.session.secret
+
+image_path = os.path.join(os.getcwd(),'www/static/images')
 
 def _get_page_index():
     page_index = 1
@@ -137,11 +139,26 @@ def get_file():
     user = ctx.request.user
     if not user:
         raise APIError('Authencation:fail','token','token is wrong','-1')
-    i = ctx.request.input()
-    user = i.user
-    logging.info('the token is %s' % i.token)
+    i = ctx.request.input(filetype='.jpg')
+
     logging.info('the file is %s'% (i.file))
-    return {}
+    if not isinstance(i.file, MultipartFile):
+        raise APIError('IO:error','file','read the file error','-1')
+    logging.info('the token is %s' % i.token)
+    file_name = next_id()+'.'+i.filetype
+    file_path = os.path.join(image_path, file_name)
+    logging.info('the out file is %s' % file_path)
+    fw = open(file_path, 'wb')
+    buf = i.file.file.readline()
+    while buf != '':
+        fw.write(buf)
+        buf = i.file.file.readline()
+    fw.close()
+    image = Image(image_path=file_path,user_id=user.id)
+    image.insert()
+    image.pop('image_path')
+    image.errcode='0'
+    return image
 
 @interceptor('/myfun/api-token/')
 def user_interceptor(next):
@@ -149,6 +166,7 @@ def user_interceptor(next):
     i = ctx.request.input(token='',phone='')
     token = i.token.strip()
     phone = i.phone.strip()
+    logging.info('the token %s and phone %s'% (token,phone))
     ctx.request.user = None
     if not phone or not _RE_PHONE.match(phone):
         return next()
@@ -158,6 +176,7 @@ def user_interceptor(next):
     token_verify = Token.find_first('where id=?',user.id)
     if token_verify.token1 != token:
         return next()
+    logging.info('the token is %s' % token_verify)
     ctx.request.user = user
     return next()
 
@@ -170,7 +189,7 @@ def get_code():
         raise APIError('TooOften',num,'the phone num is not right!','-1')
     user = User.find_first('where phone=?', num)
     if user and user.valid==True:
-        raise APIError('duplicated:phone','phone','phone is already in use.')
+        raise APIError('duplicated:phone','phone','phone is already in use.','-1')
     verify_code = VerifyCode.find_first('where num=?',num)
     if verify_code:
         update_time = verify_code.created_at
@@ -246,7 +265,6 @@ def register_user():
     female = i.female.strip().lower()
     image = i.image.strip()
     token = i.token.strip()
-    logging.info('the phone is %s ' % phone)
     if not name:
         raise APIValueError('name',errcode='-1')
     if not image:
@@ -254,12 +272,15 @@ def register_user():
     if not token:
         raise APIValueError('token',errcode='-1')
     user = ctx.request.user
+    logging.info('the user is %s' % user.id)
     if not user:
         raise APIError('Authencation:fail','token','token is wrong','-1')
+    logging.info('the user is %s' % user.id)
     is_female = False
     logging.info('the user valid %d' % user.valid)
     if user and user.valid == True:
-        raise APIError('register:failed', 'phone', 'phone is already in use.')
+        logging.info('valid  dddd')
+        raise APIError('register:failed', 'phone', 'phone is already in use.','-1')
 	if female == 'male':
 		is_female = False
 	elif female == 'female':
@@ -275,6 +296,7 @@ def register_user():
     user.pop('password')
     user.pop('created_at')
     user.pop('id')
+    user.errcode='0'
     user['token'] = token
     return user
 
@@ -443,10 +465,11 @@ def api_get_comments():
 @api
 @get('/myfun/api/users')
 def api_get_users():
+    cwd = os.getcwd()
     total = User.count_all()
     page = Page(total, _get_page_index())
     users = User.find_by('order by created_at desc limit ?,?', page.offset, page.limit)
     logging.info(str(users))
     for u in users:
         u.password = '******'
-    return dict(users=users, page=page)
+    return dict(users=users, page=page,cwd=image_path)

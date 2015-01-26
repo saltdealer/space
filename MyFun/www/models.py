@@ -40,3 +40,11 @@ class VerifyCode(Model):
     num = StringField(ddl='varchar(11)')
     code = StringField(ddl='varchar(5)')
     created_at = FloatField(default=time.time)
+class Image(Model):
+    __table__ = 'image_id'
+
+    id = StringField(primary_key=True, default=next_id, ddl='varchar(50)')
+    image_path = StringField( ddl='varchar(100)' )
+    user_id = StringField( ddl='varchar(50)' )
+
+

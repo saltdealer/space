@@ -46,8 +46,8 @@ create table verify_code (
 ) engine=innodb default charset=utf8;
 
 create table image_id (
-        `id` real not null AUTO_INCREMENT,
-        `image_path` varchar(100) not null,
+        `id` varchar(50) not null,
+        `image_path` varchar(400) not null,
         `user_id` varchar(50) not null,
         primary key (`id`)
 ) AUTO_INCREMENT=111 engine=innodb default charset=utf8;
