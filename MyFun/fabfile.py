@@ -15,7 +15,7 @@ from fabric.api import *
 env.user = 'root'
 env.sudo_user = 'root'
 env.hosts = ['191.101.9.76']
-env.password='*******'
+env.password='114763xj'
 
 db_user = 'root'
 db_password = 'xj'
@@ -49,8 +49,8 @@ def build():
     '''
     Build dist package.
     '''
-    includes = [ 'transwarp','static', '*.py','schema.sql']
-    excludes = ['test', '.*', '*.pyc', '*.pyo']
+    includes = [ 'transwarp','myfunstatic', '*.py','schema.sql']
+    excludes = ['test', '.*', '*.pyc', '*.pyo','*.jpg']
     local('rm -f dist/%s' % _TAR_FILE)
     with lcd(os.path.join(_current_path(), 'www')):
         cmd = ['tar', '--dereference', '-czvf', '../dist/%s' % _TAR_FILE]

@@ -17,7 +17,8 @@ from config import configs
 _COOKIE_NAME = 'awesession'
 _COOKIE_KEY = configs.session.secret
 
-image_path = os.path.join(os.getcwd(),'www/static/images')
+image_path = os.path.join(os.getcwd(),'myfunstatic/images')
+image_path_relative = 'myfunstatic/images/'
 
 def _get_page_index():
     page_index = 1
@@ -81,7 +82,7 @@ def get_file():
         fw.write(buf)
         buf = i.file.file.readline()
     fw.close()
-    image = Image(image_path=file_path,user_id=user.id)
+    image = Image(image_path=image_path_relative+file_name,user_id=user.id)
     image.insert()
     image.pop('image_path')
     image.errcode='0'
